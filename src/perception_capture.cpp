@@ -12,33 +12,77 @@ using namespace std;
 
 int main()
 {
-  VideoCapture capture0(1); // open the video file for reading
+  VideoCapture capture1(0); // open the video file for reading
   //VideoCapture capture1(1); // open the video file for reading
   //capture0.set(CV_CAP_PROP_FRAME_WIDTH,640);
   //capture0.set(CV_CAP_PROP_FRAME_HEIGHT,480);
-  capture0.set(CV_CAP_PROP_FRAME_WIDTH,1280);
-  capture0.set(CV_CAP_PROP_FRAME_HEIGHT,720);
+  capture1.set(CV_CAP_PROP_FRAME_WIDTH,1280);
+  capture1.set(CV_CAP_PROP_FRAME_HEIGHT,720);
 
   int key = 0;
-  while(key != 'q')
-    {
-      if(!capture0.isOpened()){
-	cout << "Failed to connect to the camera." << endl;
-      }
-      Mat frame, edges;
-      capture0 >> frame;
-      if(frame.empty()){
-	cout << "Failed to capture an image" << endl;
-	return -1;
-      }
+  // while(key != 'q')
+  //   {
+  //   }
+  Mat frame;
+ 
+  if(!capture1.isOpened()){
+    cout << "Failed to connect to the camera." << endl;
+  }
+      
+  capture1 >> frame;
 
-      //cvtColor(frame, edges, CV_BGR2GRAY);
-      //Canny(edges, edges, 0, 30, 3);
-      //imshow("edges", edges);
-      imshow("capture", frame);
-      key = waitKey(100);
-      // cout << key << endl;
+  if(frame.empty()){
+    cout << "Failed to capture an image" << endl;
+    return -1;
+  }
+
+    
+  vector<Mat> leftImages, rightImages;
+  leftImages.push_back(frame);
+  waitKey(10);
+  capture1>>frame;
+  if(frame.empty()){
+    cout << "Failed to capture an image" << endl;
+    return -1;
+  }
+  rightImages.push_back(frame);
+
+  imshow("leftImage",leftImages[0]);
+  imshow("rightImage",rightImages[0]); 
+
+  //start to compare the images
+
+
+  //-- Detect the keypoints using SURF Detector
+  int minHessian = 400;
+
+  SurfFeatureDetector detector( minHessian );
+
+  std::vector<KeyPoint> keypoints1, keypoints2, keypointsInBox1, keypointsGM1, keypointsGM2;
+
+  detector.detect( image1, keypoints1 );
+  detector.detect( image2, keypoints2 );
+
+  Mat imgKeypoints1; Mat imgKeypoints2;
+  
+  //-- Detect keypoints that are within the box 
+ 
+  for (int i = 0; i < keypoints1.size(); i++)
+    {
+      if (keypoints1[i].pt.x < lowerRight.x && keypoints1[i].pt.x > upperLeft.x &&
+	  keypoints1[i].pt.y < lowerRight.y && keypoints1[i].pt.y > upperLeft.y)
+	{
+	  keypointsInBox1.push_back(keypoints1[i]);
+	}
+
     }
+  //-- Match points from within the box to the next frame
+  matchPoints(&keypointsInBox1,&keypoints2,image1,image2,&keypointsGM1,&keypointsGM2,2.1);
+
+
+  key = waitKey();
+  // cout << key << endl;
+    
 
   return 0;
 }
