@@ -85,10 +85,19 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
       Point locUL,locLR;
       int sResponse;
       char imName[30];
-      sprintf(imName,"images/rotation_images/left%03d.jpg",i);
-      templateIm = imread(imName, CV_LOAD_IMAGE_GRAYSCALE);
-      getTemplateMatch(imageL,&locUL,&locLR, &templateIm, &sResponse);
-      printf("locUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d",locUL.x,locUL.y,locLR.x,locLR.y);
+      Mat tempIm;
+      sprintf(imName,"images/templates/left%03d.jpg",i);
+      printf("%s \n",imName);
+      tempIm = imread(imName, CV_LOAD_IMAGE_COLOR);
+      imshow("template",tempIm);
+      waitKey(1000);
+      getTemplateMatch(imageL,&locUL,&locLR, &tempIm, &sResponse);
+      printf("template: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d",i,locUL.x,locUL.y,locLR.x,locLR.y);
+      Mat imageS = imageL;
+      rectangle(imageS,locUL,locLR,10,3);
+      imshow("image",imageS);
+      //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
+      waitKey(1000);
     }
 
   //-- Estimate a box 
@@ -231,10 +240,10 @@ void Bot::getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templ
   result.create( resultCols, resultRows, CV_32FC1 );
       
   //-- Resize the template for the current box size
-  Mat resizedTemplate;
-  resize(*templateImage,resizedTemplate,Size( lowerRight.x - upperLeft.x,lowerRight.y - upperLeft.y));
+  //Mat resizedTemplate;
+  //resize(*templateImage,resizedTemplate,Size( lowerRight.x - upperLeft.x,lowerRight.y - upperLeft.y));
   //-- Match and normalize
-  matchTemplate(image, resizedTemplate, result, CV_TM_SQDIFF );
+  matchTemplate(image, *templateImage, result, CV_TM_SQDIFF);
 
   //normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
       
@@ -244,8 +253,8 @@ void Bot::getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templ
   *matchUL = minLoc;
     
   //-- Set the other match coordinates
-  matchLR->x = matchUL->x + resizedTemplate.cols;
-  matchLR->y = matchUL->y + resizedTemplate.rows;
+  matchLR->x = matchUL->x + templateImage->cols;
+  matchLR->y = matchUL->y + templateImage->rows;
 }
 
 void Bot::updateBoxSize(Mat image)

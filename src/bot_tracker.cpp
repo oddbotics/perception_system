@@ -32,14 +32,14 @@ int main( int argc, char** argv )
   char imName2[30];
   sprintf(imName1,"images/test_images/left%03d.jpg",j);
   sprintf(imName2,"images/test_images/right%03d.jpg",j);
-  Mat imgL = imread( imName1, CV_LOAD_IMAGE_GRAYSCALE );
-  Mat imgR = imread( imName2, CV_LOAD_IMAGE_GRAYSCALE );
+  Mat imgL = imread( imName1, CV_LOAD_IMAGE_COLOR );
+  Mat imgR = imread( imName2, CV_LOAD_IMAGE_COLOR );
   printf("%s\n",imName1);
   //waitKey(10);
   //firstCar.updateBoxSize(img1);
 
   oddBot.updateBoxPos(imgL, imgR);
-
+  waitKey(0);
       // }
   return 0;
 }
