@@ -80,7 +80,7 @@ void Bot::matchPoints(std::vector<KeyPoint>* keypointsIn1, std::vector<KeyPoint>
 void Bot::updateBoxPos(Mat imageL, Mat imageR)
 {
   //-- Check left image for robot 
-  for (int i=0;i<8;i++)
+  for (int i=1;i<9;i++)
     {
       Point locUL,locLR;
       int sResponse;
