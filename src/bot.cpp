@@ -79,13 +79,17 @@ void Bot::matchPoints(std::vector<KeyPoint>* keypointsIn1, std::vector<KeyPoint>
 
 void Bot::updateBoxPos(Mat imageL, Mat imageR)
 {
+  double bestResponse=10000000000;
+  int rotI;
+  Point bestUL,bestLR;
+  
   //-- Check left image for robot 
   for (int i=1;i<9;i++)
     {
       Point locUL,locLR;
-      int sResponse;
+      double sResponse;
       char imName[30];
-      Mat tempIm;
+      Mat tempIm;  
       sprintf(imName,"images/templates/left%03d.jpg",i);
       printf("%s \n",imName);
       tempIm = imread(imName, CV_LOAD_IMAGE_COLOR);
@@ -95,6 +99,16 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
       printf("template: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d",i,locUL.x,locUL.y,locLR.x,locLR.y);
       Mat imageS = imageL;
       rectangle(imageS,locUL,locLR,10,3);
+      
+      if (bestResponse > sResponse)
+	{
+	  rotI = i;
+	  bestUL = locUL;
+	  bestLR = locLR;
+	  bestResponse = sResponse;
+	  printf("best Response: %f\n",bestResponse);
+	}
+      rectangle(imageS,bestUL,bestLR,100,3);
       imshow("image",imageS);
       //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
       waitKey(1000);
@@ -220,7 +234,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
 
 }
 
-void Bot::getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templateImage,int* strongestResponse)
+void Bot::getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templateImage,double* strongestResponse)
 {
   //-- This function will take a template image, resize it to the box size, and find it in the image
   //-- This is used as a check on the SURF features update of the box and the edge resize of the box
@@ -255,6 +269,7 @@ void Bot::getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templ
   //-- Set the other match coordinates
   matchLR->x = matchUL->x + templateImage->cols;
   matchLR->y = matchUL->y + templateImage->rows;
+  *strongestResponse = minVal;
 }
 
 void Bot::updateBoxSize(Mat image)
@@ -335,7 +350,7 @@ void Bot::updateBoxSize(Mat image)
   rectangle(edges,upperLeft,lowerRight,150);  
 
   Point matchUL, matchLR;    
-  int sResponse;
+  double sResponse;
  
   //-- Use the current template image to search for the car in the image
   getTemplateMatch(image,&matchUL,&matchLR,&templateIm, &sResponse);
@@ -485,7 +500,7 @@ bool Bot::unitTest(Mat image)
 
   //-- Test getTemplateMatch
   Mat emptyTemplate;
-  int sResponse;
+  double sResponse;
     getTemplateMatch(image,&matchUL,&matchLR,&emptyTemplate, &sResponse);
   if(matchUL== upperLeft) printf("[ PASS ]");
   else 

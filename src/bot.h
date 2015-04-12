@@ -44,7 +44,7 @@ class Bot
   std::vector<int> yHistory;
 
   void checkBounds(Mat image, Point* uL, Point* lR);
-  void getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templateImage, int* strongestResponse);
+  void getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templateImage, double* strongestResponse);
   void matchPoints(std::vector<KeyPoint>* keypointsIn1, std::vector<KeyPoint>* keypointsIn2,Mat image1, Mat image2, std::vector<KeyPoint>* keypointsOut1, std::vector<KeyPoint>* keypointsOut2, int thresh);
   
   
