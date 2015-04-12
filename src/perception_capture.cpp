@@ -26,8 +26,9 @@ int main()
   int n;
   char buffer[25];
   Mat frame1,frame2;
+  vector<Mat> leftImages, rightImages;
   //while(key != 'q')
-  for(int i = 0; i < 100; i++)
+  for(int i = 0; i < 100000; i++)
    {
   
   if(!capture1.isOpened()){
@@ -53,7 +54,7 @@ int main()
 
 
     
-  vector<Mat> leftImages, rightImages;
+  
   leftImages.push_back(frame1);
   
   rightImages.push_back(frame2);
@@ -61,13 +62,16 @@ int main()
   imshow("leftImage",frame1);
   imshow("rightImage",frame2);
   
-  n = sprintf(buffer,"images/left%03d.jpg",i);
-  imwrite(buffer,frame1);
+  if(i%1000 == 0)
+    {
+      n = sprintf(buffer,"images/left%03d.jpg",i/1000);
+      imwrite(buffer,frame1);
 
-  n = sprintf(buffer,"images/right%03d.jpg",i);
-  imwrite(buffer,frame2);
+      n = sprintf(buffer,"images/right%03d.jpg",i/1000);
+      imwrite(buffer,frame2);
+    }
 
-  waitKey(1);
+  waitKey(10);
    }
   
   //start to compare the images
