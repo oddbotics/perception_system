@@ -16,7 +16,7 @@ Bot::Bot(Point uL, Point lR, Mat initialIm)
   lowerRight = lR;
   inertialTracking = false;
   checkBounds(initialIm, &upperLeft, &lowerRight);
-  templateIm = initialIm(Range(upperLeft.y,lowerRight.y),Range(upperLeft.x,lowerRight.x));
+  //templateIm = initialIm(Range(upperLeft.y,lowerRight.y),Range(upperLeft.x,lowerRight.x));
   updateTemplate = 1;  
 }
 
@@ -101,7 +101,6 @@ void Bot::updateBoxPos(Mat image1, Mat image2)
 	{
 	  keypointsBot1.push_back(keypoints1[i]);
 	}
-
     }
   //-- Match points from within the box to the next frame
   matchPoints(&keypointsBot1,&keypoints2,image1,image2,&keypointsGM1,&keypointsGM2,2.1);
@@ -160,7 +159,7 @@ void Bot::updateBoxPos(Mat image1, Mat image2)
 
 }
 
-void Bot::getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templateImage)
+void Bot::getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templateImage,int* strongestResponse)
 {
   //-- This function will take a template image, resize it to the box size, and find it in the image
   //-- This is used as a check on the SURF features update of the box and the edge resize of the box
@@ -183,11 +182,13 @@ void Bot::getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templ
   Mat resizedTemplate;
   resize(*templateImage,resizedTemplate,Size( lowerRight.x - upperLeft.x,lowerRight.y - upperLeft.y));
   //-- Match and normalize
-  matchTemplate(image, resizedTemplate, result, CV_TM_SQDIFF_NORMED );
-  normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
+  matchTemplate(image, resizedTemplate, result, CV_TM_SQDIFF );
+
+  //normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
       
   //-- Grab the best match from the result matrix
   minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+  printf("Best Match :%f \n",minVal);
   *matchUL = minLoc;
     
   //-- Set the other match coordinates
@@ -273,9 +274,10 @@ void Bot::updateBoxSize(Mat image)
   rectangle(edges,upperLeft,lowerRight,150);  
 
   Point matchUL, matchLR;    
+  int sResponse;
  
   //-- Use the current template image to search for the car in the image
-  getTemplateMatch(image,&matchUL,&matchLR,&templateIm);
+  getTemplateMatch(image,&matchUL,&matchLR,&templateIm, &sResponse);
  
   checkBounds(image, &matchUL, &matchLR);    
  

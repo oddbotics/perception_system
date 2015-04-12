@@ -6,4 +6,6 @@ images2 = rightImages.ImageLocation;
 [imagePoints,boardSize,pairsUsed] = detectCheckerboardPoints(images1,images2);
 squareSize = 22.5;
 worldPoints = generateCheckerboardPoints(boardSize,squareSize);
-
+stereoParams = estimateCameraParameters(imagePoints,worldPoints);
+save('/home/ed/Dropbox/GitHub/catkin_ws/src/perception_system/src/images/calibration_images/12APR/stereoParams.mat','stereoParams');
+save('/home/ed/Dropbox/GitHub/catkin_ws/src/perception_system/src/images/calibration_images/12APR/calibParams.mat');

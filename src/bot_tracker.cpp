@@ -6,7 +6,7 @@
 //04 March 2015
 //ericdanziger@cmu.edu
 
-#include "car.h"
+#include "bot.h"
 using namespace cv;
 
 int main( int argc, char** argv )
@@ -35,7 +35,7 @@ int main( int argc, char** argv )
       Mat img2 = imread( imName2, CV_LOAD_IMAGE_GRAYSCALE );
       printf("%s\n",imName1);
       //waitKey(10);
-      firstCar.updateBoxSize(img1);
+      //firstCar.updateBoxSize(img1);
 
       firstCar.updateBoxPos(img1, img2);
 
