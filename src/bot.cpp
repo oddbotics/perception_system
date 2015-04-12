@@ -9,13 +9,13 @@
 #include "bot.h"
 using namespace cv;
 
-Bot::Bot(Point uL, Point lR, Mat initialIm)
+Bot::Bot(Point uL, Point lR)
 {
 
   upperLeft = uL;
   lowerRight = lR;
   inertialTracking = false;
-  checkBounds(initialIm, &upperLeft, &lowerRight);
+  //checkBounds(initialIm, &upperLeft, &lowerRight);
   //templateIm = initialIm(Range(upperLeft.y,lowerRight.y),Range(upperLeft.x,lowerRight.x));
   updateTemplate = 1;  
 }
@@ -77,9 +77,61 @@ void Bot::matchPoints(std::vector<KeyPoint>* keypointsIn1, std::vector<KeyPoint>
 
 }
 
-void Bot::updateBoxPos(Mat image1, Mat image2)
+void Bot::updateBoxPos(Mat imageL, Mat imageR)
 {
+  //-- Check left image for robot 
+  for (int i=0;i<8;i++)
+    {
+      Point locUL,locLR;
+      int sResponse;
+      char imName[30];
+      sprintf(imName,"images/rotation_images/left%03d.jpg",i);
+      templateIm = imread(imName, CV_LOAD_IMAGE_GRAYSCALE);
+      getTemplateMatch(imageL,&locUL,&locLR, &templateIm, &sResponse);
+      printf("locUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d",locUL.x,locUL.y,locLR.x,locLR.y);
+    }
 
+  //-- Estimate a box 
+
+  //-- Match points inside the boxes in the Left and Right images
+
+
+
+  //-- Triangulate distance
+  float dL[3][4];
+  dL[0][0] = 1684.9;
+  dL[0][1] = 0;
+  dL[0][2] = 0;
+  dL[0][3] = 0;
+  dL[1][0] = 0;
+  dL[1][1] = 1728.8;
+  dL[1][2] = 0;
+  dL[1][3] = 0;
+  dL[2][0] = 660.52;
+  dL[2][1] = 291.174;
+  dL[2][2] = 1;
+  dL[2][3] = 0;
+  Mat lProj = Mat(3,4,CV_32FC1, &dL);
+  float dR[3][4];
+  dR[0][0] = 1637.08;
+  dR[0][1] = 32.28;
+  dR[0][2] = -140.30;
+  dR[0][3] = -394655.30;
+  dR[1][0] = -26.01;
+  dR[1][1] = 1678.24;
+  dR[1][2] = 82.60;
+  dR[1][3] = -5163.78;
+  dR[2][0] = 578.76;
+  dR[2][1] = 340.99;
+  dR[2][2] = -32.82;
+  dR[2][3] = -141792.99;
+  Mat rProj = Mat(3,4,CV_32FC1, &dR);
+
+  Mat worldPoints;
+  //triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
+
+  
+  /*
   //-- Detect the keypoints using SURF Detector
   int minHessian = 400;
 
@@ -151,11 +203,11 @@ void Bot::updateBoxPos(Mat image1, Mat image2)
       //-- Make sure the edges of the box are still on the screen
       checkBounds(image1, &upperLeft, &lowerRight);
     }
-
+  */
   //-- Show detected (drawn) keypoints
-  imshow("Bot Tracker", imgKeypoints1 );
-  imshow("Template", templateIm);
-  waitKey(100);
+  //imshow("Bot Tracker", imgKeypoints1 );
+  //imshow("Template", templateIm);
+  waitKey(10);
 
 }
 
@@ -424,7 +476,8 @@ bool Bot::unitTest(Mat image)
 
   //-- Test getTemplateMatch
   Mat emptyTemplate;
-  getTemplateMatch(image,&matchUL,&matchLR,&emptyTemplate);
+  int sResponse;
+    getTemplateMatch(image,&matchUL,&matchLR,&emptyTemplate, &sResponse);
   if(matchUL== upperLeft) printf("[ PASS ]");
   else 
     {
@@ -433,7 +486,7 @@ bool Bot::unitTest(Mat image)
     }
   printf("  Empty Template Doesn't Match\n");
 
-  getTemplateMatch(image, &matchUL, &matchLR, &templateIm);
+  getTemplateMatch(image, &matchUL, &matchLR, &templateIm, &sResponse);
   if(matchUL== upperLeft) printf("[ PASS ]");
   else
     { 
