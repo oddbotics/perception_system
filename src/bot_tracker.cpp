@@ -15,31 +15,32 @@ int main( int argc, char** argv )
   Point upperLeft(540,295);
   Point lowerRight(683,468);
    
-  Mat initialImg = imread("images/left012.jpg", CV_LOAD_IMAGE_GRAYSCALE );
-  if(!initialImg.rows)
-    {
-      printf("This program expects files in '../car/'\n");
-      return 0;
-    }
+  //Mat initialImg = imread("images/left012.jpg", CV_LOAD_IMAGE_GRAYSCALE );
+  //if(!initialImg.rows)
+  //  {
+    //   printf("This program expects files in '../car/'\n");
+    //   return 0;
+    // }
   //-- Initialize a car object 
-  Car firstCar(upperLeft,lowerRight,initialImg);
+  Bot oddBot(upperLeft,lowerRight);
 
   //-- Iterate through images 
-  for (int j = 1; j < 252; j++)
-    {
-      char imName1[30];
-      char imName2[30];
-      sprintf(imName1,"images/left%03d.jpg",j);
-      sprintf(imName2,"images/left%03d.jpg",j+1);
-      Mat img1 = imread( imName1, CV_LOAD_IMAGE_GRAYSCALE );
-      Mat img2 = imread( imName2, CV_LOAD_IMAGE_GRAYSCALE );
-      printf("%s\n",imName1);
-      //waitKey(10);
-      //firstCar.updateBoxSize(img1);
+  //for (int j = 1; j < 252; j++)
+  //  {
+  int j = 36;
+  char imName1[30];
+  char imName2[30];
+  sprintf(imName1,"images/test_images/left%03d.jpg",j);
+  sprintf(imName2,"images/test_images/right%03d.jpg",j);
+  Mat imgL = imread( imName1, CV_LOAD_IMAGE_GRAYSCALE );
+  Mat imgR = imread( imName2, CV_LOAD_IMAGE_GRAYSCALE );
+  printf("%s\n",imName1);
+  //waitKey(10);
+  //firstCar.updateBoxSize(img1);
 
-      firstCar.updateBoxPos(img1, img2);
+  oddBot.updateBoxPos(imgL, imgR);
 
-    }
+      // }
   return 0;
 }
 

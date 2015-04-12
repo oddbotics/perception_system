@@ -8,13 +8,13 @@ LFLAGS = -Wall `pkg-config opencv --libs` -L /usr/lib  -lboost_system -lboost_fi
 all: bottracker
 
 
-bot_tracker.o: bot_tracker.cpp car.h
+bot_tracker.o: bot_tracker.cpp bot.h
 	$(CC) $(CFLAGS) -c $^ 
 
-car.o: car.h
+bot.o: bot.h
 
 
-bottracker: bot_tracker.o car.o
+bottracker: bot_tracker.o bot.o
 	$(LINK) $^ -o $@  $(LFLAGS)
 
 #test.o: test.cpp car.h
