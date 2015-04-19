@@ -79,47 +79,130 @@ void Bot::matchPoints(std::vector<KeyPoint>* keypointsIn1, std::vector<KeyPoint>
 
 void Bot::updateBoxPos(Mat imageL, Mat imageR)
 {
-  double bestResponse=10000000000;
-  int rotI;
-  Point bestUL,bestLR;
+  double lBestResponse=10000000000;
+  int lRotI;
+  float lBestDeg;
+  Point lBestUL,lBestLR;
+
+  double rBestResponse=10000000000;
+  int rRotI;
+  float rBestDeg;
+  Point rBestUL,rBestLR;
   
   //-- Check left image for robot 
   for (int i=1;i<9;i++)
     {
       Point locUL,locLR;
       double sResponse;
+      float deg;
       char imName[30];
       Mat tempIm;  
       sprintf(imName,"images/templates/left%03d.jpg",i);
       printf("%s \n",imName);
       tempIm = imread(imName, CV_LOAD_IMAGE_COLOR);
+      sprintf(imName,"%f d",(i*360.0/8));
       imshow("template",tempIm);
       waitKey(1000);
       getTemplateMatch(imageL,&locUL,&locLR, &tempIm, &sResponse);
-      printf("template: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d",i,locUL.x,locUL.y,locLR.x,locLR.y);
+      deg = i*(360.0/8);
+      //printf("LEFT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
       Mat imageS = imageL;
       rectangle(imageS,locUL,locLR,10,3);
       
-      if (bestResponse > sResponse)
+      if (lBestResponse > sResponse)
 	{
-	  rotI = i;
-	  bestUL = locUL;
-	  bestLR = locLR;
-	  bestResponse = sResponse;
-	  printf("best Response: %f\n",bestResponse);
+	  lRotI = i;
+	  lBestUL = locUL;
+	  lBestLR = locLR;
+	  lBestResponse = sResponse;
+	  lBestDeg = deg;
+	  printf("lBest Response: %f\n",lBestResponse);
 	}
-      rectangle(imageS,bestUL,bestLR,100,3);
-      imshow("image",imageS);
+      rectangle(imageS,lBestUL,lBestLR,100,3);
+      imshow("Left Image",imageS);
       //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
-      waitKey(1000);
+      waitKey(10);
     }
+  
+  printf("\nLBest Estimate of Left Rotation: %f\n",lBestDeg);
+
+  //-- Check right image for robot 
+  for (int i=1;i<9;i++)
+    {
+      Point locUL,locLR;
+      double sResponse;
+      float deg;
+      char imName[30];
+      Mat tempIm;  
+      sprintf(imName,"images/templates/right%03d.jpg",i);
+      printf("%s \n",imName);
+      tempIm = imread(imName, CV_LOAD_IMAGE_COLOR);
+      //sprintf(imName,"%f d",(i*360.0/8));
+      imshow("template",tempIm);
+      waitKey(1000);
+      getTemplateMatch(imageR,&locUL,&locLR, &tempIm, &sResponse);
+      deg = i*(360.0/8);
+      //printf("RIGHT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
+      Mat imageS = imageR;
+      rectangle(imageS,locUL,locLR,10,3);
+      
+      if (rBestResponse > sResponse)
+	{
+	  rRotI = i;
+	  rBestUL = locUL;
+	  rBestLR = locLR;
+	  rBestResponse = sResponse;
+	  rBestDeg = deg;
+	  printf("rBest Response: %f\n",rBestResponse);
+	}
+      rectangle(imageS,rBestUL,rBestLR,100,3);
+      imshow("Right Image",imageS);
+      //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
+      waitKey(10);
+    }
+  
+  printf("\nBest Estimate of Right Rotation: %f\n",rBestDeg);
+
 
   //-- Estimate a box 
 
   //-- Match points inside the boxes in the Left and Right images
+   int minHessian = 400;
+
+  SurfFeatureDetector detector( minHessian );
+
+  std::vector<KeyPoint> keypointsL, keypointsR, keypointsBotL, keypointsBotR, keypointsGML, keypointsGMR;
+
+  detector.detect( imageL, keypointsL );
+  detector.detect( imageR, keypointsR );
+
+  Mat imgKeypointsL; Mat imgKeypointsR;
+  
+  //-- Detect keypoints that are within the box -LEFT
+ 
+  for (int i = 0; i < keypointsL.size(); i++)
+    {
+      if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
+	  keypointsL[i].pt.y < lBestLR.y && keypointsL[i].pt.y > lBestUL.y)
+	{
+	  keypointsBotL.push_back(keypointsL[i]);
+	}
+    }
+ //-- Detect keypoints that are within the box - RIGHT
+ 
+ for (int i = 0; i < keypointsR.size(); i++)
+    {
+      if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
+	  keypointsR[i].pt.y < rBestLR.y && keypointsR[i].pt.y > rBestUL.y)
+	{
+	  keypointsBotR.push_back(keypointsR[i]);
+	}
+    }
+  //-- Match points from within the box to the next frame
+  matchPoints(&keypointsBotL,&keypointsBotR,imageL,imageR,&keypointsGML,&keypointsGMR,2.1);
 
 
-
+  
   //-- Triangulate distance
   float dL[3][4];
   dL[0][0] = 1684.9;
@@ -150,10 +233,50 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
   dR[2][3] = -141792.99;
   Mat rProj = Mat(3,4,CV_32FC1, &dR);
 
-  Mat worldPoints;
-  //triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
+  Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
+  std::vector<Point2f> lPoints,rPoints;
+  for (int i = 0; i < keypointsGML.size(); i++)
+    {
+      lPoints.push_back(keypointsGML[i].pt);
+    }
+ for (int i = 0; i < keypointsGMR.size(); i++)
+    {
+      rPoints.push_back(keypointsGMR[i].pt);
+    }
+   drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+ drawKeypoints( imageR, keypointsGMR, imageWithKeyPointsR, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
 
-  
+ imshow("With Keypoints L", imageWithKeyPointsL);
+ imshow("With Keypoints R", imageWithKeyPointsR);
+ waitKey(10000);
+
+  triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
+
+
+  //-- Normalize by the scale factor
+  //-- And get the average of the values
+  std::vector<float> x,y,z;
+ for (int i = 0; i < worldPoints.cols; i++)
+    {
+      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
+      x.push_back(worldPoints.at<float>(0,i));
+      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
+      y.push_back(worldPoints.at<float>(1,i));
+      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
+      z.push_back(worldPoints.at<float>(2,i));
+      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
+    }
+
+ float avgX = std::accumulate(x.begin(), x.end(), 0) / (float)x.size();
+ float avgY = std::accumulate(y.begin(), y.end(), 0) / (float)y.size();
+ float avgZ = std::accumulate(z.begin(), z.end(), 0) / (float)z.size();
+
+  std::cout<< "\nworldPoints: "<< std::endl << worldPoints << std::endl;
+  // printf("WorldPoints: \n",worldPoints);
+  printf("Avg X: %f\n",avgX);
+  printf("Avg Y: %f\n",avgY);
+  printf("Avg Z: %f\n",avgZ);
+
   /*
   //-- Detect the keypoints using SURF Detector
   int minHessian = 400;
@@ -263,7 +386,7 @@ void Bot::getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templ
       
   //-- Grab the best match from the result matrix
   minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
-  printf("Best Match :%f \n",minVal);
+  printf("Strongest Match :%f \n",minVal);
   *matchUL = minLoc;
     
   //-- Set the other match coordinates

@@ -10,8 +10,17 @@
 using namespace cv;
 using namespace std;
 
-int main()
+int main(int argc, char** argv)
 {
+  char folder[20];
+  if (argc !=2)
+    {
+      folder ='';
+    }
+  else
+    {
+      folder = argv[1];
+    }
   VideoCapture capture1(1); // open the video file for reading
   VideoCapture capture2(2); 
   //VideoCapture capture1(1); // open the video file for reading

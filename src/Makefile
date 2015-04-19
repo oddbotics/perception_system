@@ -25,7 +25,7 @@ bottracker: bot_tracker.o bot.o
 
 
 clean:
-	rm -f  *.o *.gch
+	rm -f  *.o *.gch bottracker*
 
 install:
 	cp bottracker /usr/bin/
