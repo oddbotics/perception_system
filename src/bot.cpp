@@ -80,6 +80,7 @@ void Bot::matchPoints(std::vector<KeyPoint>* keypointsIn1, std::vector<KeyPoint>
 void Bot::updateBoxPos(Mat imageL, Mat imageR)
 {
   double lBestResponse=100000;
+  int lMostPoints=0;
   int lRotI;
   float lBestDeg;
   Point lBestUL,lBestLR;
@@ -92,7 +93,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
   //-- Check left image for robot 
   for (int i=1;i<9;i++)
     {
-      for (float scale=.5;scale < 1.50; scale=scale+.10)
+      for (float scale=.7;scale < 1.30; scale=scale+.10)
 	{
 	  Point locUL,locLR;
 	  double sResponse;
@@ -113,21 +114,33 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
 	 
 	  //Do it on Edges
 	  blur(tempIm,tempEdges,Size(3,3));
-	  Canny(tempEdges,tempEdges,80,100,3);
+	  Canny(tempEdges,tempEdges,120,140,3);
 
 
-	  blur(imageL,lTempEdges,Size(3,3));
-	  Canny(lTempEdges,lTempEdges,80,100,3);
+	  
+	  //Mat halfImage = lTempEdges(Range(imageL.cols/2,imageL.cols),Range(1,imageL.rows));
+	  Mat halfImage = imageL(Range(imageL.rows/2,imageL.rows),Range(1,imageL.cols));
+
+	  blur(halfImage,lTempEdges,Size(3,3));
+	  Canny(lTempEdges,lTempEdges,120,140,3);
+	  
+	  //templateIm = initialIm(Range(upperLeft.y,lowerRight.y),Range(upperLeft.x,lowerRight.x));
+	  imshow("template",tempIm);
+	  imshow("edges",lTempEdges);
+	  waitKey(100);
+	  
+	  getTemplateMatch(halfImage,&locUL,&locLR, &tempIm, &sResponse);
+	  // getTemplateMatch(lTempEdges,&locUL,&locLR, &tempEdges, &sResponse);
+	  // getTemplateMatch(imageL,&locUL,&locLR, &tempIm, &sResponse);
+	  //locUL.y = locUL.y + imageL.rows/2;
+	  //locLR.y = locLR.y + imageL.rows/2;
+	  deg = (i-1)*(360.0/8);
+	  //printf("LEFT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
+
 
 	 
-	  imshow("template",tempEdges);
-	  imshow("edges",lTempEdges);
-	  waitKey(1000);
-      
-	  getTemplateMatch(imageL,&locUL,&locLR, &tempIm, &sResponse);
-	  deg = i*(360.0/8);
-	  //printf("LEFT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
-	  Mat imageS = imageL;
+	  
+	  Mat imageS = halfImage.clone();
 	  rectangle(imageS,locUL,locLR,10,3);
       
 	  if (lBestResponse < sResponse)
@@ -142,6 +155,54 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
 	  rectangle(imageS,lBestUL,lBestLR,100,3);
 	  imshow("Left Image",imageS);
 	  //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
+
+	   //-- MATCHING SURF FEATURES
+
+	  //-- Match points inside the boxes in the Left and template images
+	  int minHessian = 400;
+
+	  SurfFeatureDetector detector( minHessian );
+
+	  std::vector<KeyPoint> keypointsL, keypointsT, keypointsBotL, keypointsBotT, keypointsGML, keypointsGMT;
+
+	  detector.detect( halfImage, keypointsL );
+	  detector.detect( tempIm, keypointsT );
+
+	  Mat imgKeypointsL; Mat imgKeypointsT;
+  
+	  //-- Detect keypoints that are within the box -LEFT
+ 
+	  for (int i = 0; i < keypointsL.size(); i++)
+	    {
+	      if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
+		  keypointsL[i].pt.y < lBestLR.y && keypointsL[i].pt.y > lBestUL.y)
+		{
+		  keypointsBotL.push_back(keypointsL[i]);
+		}
+	    }
+	  //-- Detect keypoints that are within the box - RIGHT
+ 
+	  // for (int i = 0; i < keypointsR.size(); i++)
+	  //   {
+	  //     if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
+	  // 	  keypointsR[i].pt.y < rBestLR.y && keypointsR[i].pt.y > rBestUL.y)
+	  // 	{
+	  // 	  keypointsBotR.push_back(keypointsR[i]);
+	  // 	}
+	  //   }
+	  //-- Match points from within the box to the next frame
+	  matchPoints(&keypointsL,&keypointsT,halfImage,tempIm,&keypointsGML,&keypointsGMT,3.1);
+	 
+	  drawKeypoints( halfImage, keypointsGML, imgKeypointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+	  imshow("with Keypoints",imgKeypointsL);
+	  printf("Matched %d points\n",keypointsGML.size());
+	  if(keypointsGML.size()>lMostPoints)
+	    {
+	      lMostPoints = keypointsGML.size();
+	      printf("---Highest Match is now %d\n",lMostPoints);
+	      printf("---Highest Match Rotation is %f\n",deg);
+	    }
+
 	  waitKey(10);
 	}
     }
@@ -151,7 +212,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
   //-- Check right image for robot 
   for (int i=1;i<9;i++)
     {
-      for (float scale=.5;scale < 1.50; scale=scale+.10)
+      for (float scale=.7;scale < 1.30; scale=scale+.10)
 	{
 	  Point locUL,locLR;
 	  double sResponse;
@@ -178,14 +239,17 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
 	  blur(imageR,rTempEdges,Size(3,3));
 	  Canny(rTempEdges,rTempEdges,100,120,3);
 
-	 
+
+	  Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
+
+	  
 	  imshow("template",tempEdges);
-	  waitKey(1000);
+	  waitKey(100);
       
-	  getTemplateMatch(imageR,&locUL,&locLR, &tempIm, &sResponse);
-	  deg = i*(360.0/8);
+	  getTemplateMatch(halfImage,&locUL,&locLR, &tempIm, &sResponse);
+	  deg = (i-1)*(360.0/8);
 	  //printf("LEFT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
-	  Mat imageS = imageR;
+	  Mat imageS = halfImage.clone();
 	  rectangle(imageS,locUL,locLR,10,3);
       
 	  if (rBestResponse < sResponse)
@@ -318,6 +382,13 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
   std::cout<<lProj<<std::endl<<std::endl;
   std::cout<<rProj<<std::endl<<std::endl;
 
+
+  // std::vector<Point2f> stLP,stRP;
+  // string paramsyml = "standardPoints.yml";
+  // FileStorage fsP(paramsyml,FileStorage::READ);
+  // fsP["leftP"] >>stLP;
+  // fsP["rightP"] >>stRP;
+
   Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
   std::vector<Point2f> lPoints,rPoints;
   for (int i = 0; i < keypointsGML.size(); i++)
@@ -328,14 +399,37 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
     {
       rPoints.push_back(keypointsGMR[i].pt);
     }
-   drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+ drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
  drawKeypoints( imageR, keypointsGMR, imageWithKeyPointsR, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
 
  imshow("With Keypoints L", imageWithKeyPointsL);
  imshow("With Keypoints R", imageWithKeyPointsR);
- waitKey(10000);
+ waitKey(100);
 
-  triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
+ Point2f tempPoint;
+ tempPoint.x = 386;
+ tempPoint.y = 469;
+ lPoints.push_back(tempPoint);
+ tempPoint.x = 397;
+ tempPoint.y = 567;
+ lPoints.push_back(tempPoint);
+ tempPoint.x = 1103.25;
+ tempPoint.y = 582.25;
+ lPoints.push_back(tempPoint);
+ 
+ tempPoint.x = 287;
+ tempPoint.y = 530;
+ rPoints.push_back(tempPoint);
+ tempPoint.x = 268;
+ tempPoint.y = 626;
+ rPoints.push_back(tempPoint);
+ tempPoint.x = 967;
+ tempPoint.y = 623;
+ rPoints.push_back(tempPoint);
+
+ std::cout << "\2D POINTS" << std::endl << lPoints << std::endl << rPoints <<std::endl;
+ 
+ triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
   //triangulatePoints(lProj2,rProj2,lPoints,rPoints,worldPoints);
 
 
