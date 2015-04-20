@@ -79,12 +79,12 @@ void Bot::matchPoints(std::vector<KeyPoint>* keypointsIn1, std::vector<KeyPoint>
 
 void Bot::updateBoxPos(Mat imageL, Mat imageR)
 {
-  double lBestResponse=10000000000;
+  double lBestResponse=100000;
   int lRotI;
   float lBestDeg;
   Point lBestUL,lBestLR;
 
-  double rBestResponse=10000000000;
+  double rBestResponse=100000;
   int rRotI;
   float rBestDeg;
   Point rBestUL,rBestLR;
@@ -106,27 +106,31 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
 	  scaleSize.height = tempIm.rows*scale;
 	  scaleSize.width = tempIm.cols*scale;
 
-	  printf("scale height %d width %d\n",scaleSize.height,scaleSize.width);
-	  
+	  printf("scale height %d width %d\n",scaleSize.height,scaleSize.width); 
 	  sprintf(imName,"%f d",(i*360.0/8));
+	  
+	  resize(tempIm,tempIm,scaleSize);
+	 
 	  //Do it on Edges
 	  blur(tempIm,tempEdges,Size(3,3));
-	  Canny(tempEdges,tempEdges,30,50,3);
+	  Canny(tempEdges,tempEdges,80,100,3);
 
 
 	  blur(imageL,lTempEdges,Size(3,3));
-	  Canny(lTempEdges,lTempEdges,30,50,3);
-      
+	  Canny(lTempEdges,lTempEdges,80,100,3);
+
+	 
 	  imshow("template",tempEdges);
+	  imshow("edges",lTempEdges);
 	  waitKey(1000);
       
-	  getTemplateMatch(lTempEdges,&locUL,&locLR, &tempEdges, &sResponse);
+	  getTemplateMatch(imageL,&locUL,&locLR, &tempIm, &sResponse);
 	  deg = i*(360.0/8);
 	  //printf("LEFT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
 	  Mat imageS = imageL;
 	  rectangle(imageS,locUL,locLR,10,3);
       
-	  if (lBestResponse > sResponse)
+	  if (lBestResponse < sResponse)
 	    {
 	      lRotI = i;
 	      lBestUL = locUL;
@@ -147,37 +151,89 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
   //-- Check right image for robot 
   for (int i=1;i<9;i++)
     {
-      Point locUL,locLR;
-      double sResponse;
-      float deg;
-      char imName[30];
-      Mat tempIm;  
-      sprintf(imName,"images/templates/19APR/right%03d.jpg",i);
-      printf("%s \n",imName);
-      tempIm = imread(imName, CV_LOAD_IMAGE_COLOR);
-      //sprintf(imName,"%f d",(i*360.0/8));
-      imshow("template",tempIm);
-      waitKey(1000);
-      getTemplateMatch(imageR,&locUL,&locLR, &tempIm, &sResponse);
-      deg = i*(360.0/8);
-      //printf("RIGHT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
-      Mat imageS = imageR;
-      rectangle(imageS,locUL,locLR,10,3);
-      
-      if (rBestResponse > sResponse)
+      for (float scale=.5;scale < 1.50; scale=scale+.10)
 	{
-	  rRotI = i;
-	  rBestUL = locUL;
-	  rBestLR = locLR;
-	  rBestResponse = sResponse;
-	  rBestDeg = deg;
-	  printf("rBest Response: %f\n",rBestResponse);
+	  Point locUL,locLR;
+	  double sResponse;
+	  float deg;
+	  char imName[30];
+	  Mat tempIm,tempEdges,rTempEdges;
+	  Size scaleSize;
+	  sprintf(imName,"images/templates/19APR/right%03d.jpg",i);
+	  printf("%s %f \n",imName,scale);
+	  tempIm = imread(imName, CV_LOAD_IMAGE_COLOR);
+	  scaleSize.height = tempIm.rows*scale;
+	  scaleSize.width = tempIm.cols*scale;
+
+	  printf("scale height %d width %d\n",scaleSize.height,scaleSize.width); 
+	  sprintf(imName,"%f d",(i*360.0/8));
+	  
+	  resize(tempIm,tempIm,scaleSize);
+	 
+	  //Do it on Edges
+	  blur(tempIm,tempEdges,Size(3,3));
+	  Canny(tempEdges,tempEdges,100,120,3);
+
+
+	  blur(imageR,rTempEdges,Size(3,3));
+	  Canny(rTempEdges,rTempEdges,100,120,3);
+
+	 
+	  imshow("template",tempEdges);
+	  waitKey(1000);
+      
+	  getTemplateMatch(imageR,&locUL,&locLR, &tempIm, &sResponse);
+	  deg = i*(360.0/8);
+	  //printf("LEFT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
+	  Mat imageS = imageR;
+	  rectangle(imageS,locUL,locLR,10,3);
+      
+	  if (rBestResponse < sResponse)
+	    {
+	      rRotI = i;
+	      rBestUL = locUL;
+	      rBestLR = locLR;
+	      rBestResponse = sResponse;
+	      rBestDeg = deg;
+	      printf("rBest Response: %f\n",rBestResponse);
+	    }
+	  rectangle(imageS,rBestUL,rBestLR,200,3);
+	  imshow("Right Image",imageS);
+	  //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
+	  waitKey(10);
 	}
-      rectangle(imageS,rBestUL,rBestLR,100,3);
-      imshow("Right Image",imageS);
-      //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
-      waitKey(10);
     }
+      // Point locUL,locLR;
+    //   double sResponse;
+    //   float deg;
+    //   char imName[30];
+    //   Mat tempIm;  
+    //   sprintf(imName,"images/templates/19APR/right%03d.jpg",i);
+    //   printf("%s \n",imName);
+    //   tempIm = imread(imName, CV_LOAD_IMAGE_COLOR);
+    //   //sprintf(imName,"%f d",(i*360.0/8));
+    //   imshow("template",tempIm);
+    //   waitKey(1000);
+    //   getTemplateMatch(imageR,&locUL,&locLR, &tempIm, &sResponse);
+    //   deg = i*(360.0/8);
+    //   //printf("RIGHT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
+    //   Mat imageS = imageR;
+    //   rectangle(imageS,locUL,locLR,10,3);
+      
+    //   if (rBestResponse > sResponse)
+    // 	{
+    // 	  rRotI = i;
+    // 	  rBestUL = locUL;
+    // 	  rBestLR = locLR;
+    // 	  rBestResponse = sResponse;
+    // 	  rBestDeg = deg;
+    // 	  printf("rBest Response: %f\n",rBestResponse);
+    // 	}
+    //   rectangle(imageS,rBestUL,rBestLR,100,3);
+    //   imshow("Right Image",imageS);
+    //   //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
+    //   waitKey(10);
+    // }
   
   printf("\nBest Estimate of Right Rotation: %f\n",rBestDeg);
 
@@ -410,19 +466,20 @@ void Bot::getTemplateMatch(Mat image, Point* matchUL, Point* matchLR, Mat* templ
   //Mat resizedTemplate;
   //resize(*templateImage,resizedTemplate,Size( lowerRight.x - upperLeft.x,lowerRight.y - upperLeft.y));
   //-- Match and normalize
-  matchTemplate(image, *templateImage, result, CV_TM_SQDIFF);
+  //CV_TIM_SQDIFF
+  matchTemplate(image, *templateImage, result, CV_TM_CCOEFF);
 
   //normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
       
   //-- Grab the best match from the result matrix
   minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
-  printf("Strongest Match :%f \n",minVal);
-  *matchUL = minLoc;
+  printf("Strongest Match :%f \n",maxVal);
+  *matchUL = maxLoc;
     
   //-- Set the other match coordinates
   matchLR->x = matchUL->x + templateImage->cols;
   matchLR->y = matchUL->y + templateImage->rows;
-  *strongestResponse = minVal;
+  *strongestResponse = maxVal;
 }
 
 void Bot::updateBoxSize(Mat image)
