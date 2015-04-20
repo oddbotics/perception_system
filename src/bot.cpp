@@ -92,36 +92,54 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
   //-- Check left image for robot 
   for (int i=1;i<9;i++)
     {
-      Point locUL,locLR;
-      double sResponse;
-      float deg;
-      char imName[30];
-      Mat tempIm;  
-      sprintf(imName,"images/templates/left%03d.jpg",i);
-      printf("%s \n",imName);
-      tempIm = imread(imName, CV_LOAD_IMAGE_COLOR);
-      sprintf(imName,"%f d",(i*360.0/8));
-      imshow("template",tempIm);
-      waitKey(1000);
-      getTemplateMatch(imageL,&locUL,&locLR, &tempIm, &sResponse);
-      deg = i*(360.0/8);
-      //printf("LEFT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
-      Mat imageS = imageL;
-      rectangle(imageS,locUL,locLR,10,3);
-      
-      if (lBestResponse > sResponse)
+      for (float scale=.5;scale < 1.50; scale=scale+.10)
 	{
-	  lRotI = i;
-	  lBestUL = locUL;
-	  lBestLR = locLR;
-	  lBestResponse = sResponse;
-	  lBestDeg = deg;
-	  printf("lBest Response: %f\n",lBestResponse);
+	  Point locUL,locLR;
+	  double sResponse;
+	  float deg;
+	  char imName[30];
+	  Mat tempIm,tempEdges,lTempEdges;
+	  Size scaleSize;
+	  sprintf(imName,"images/templates/19APR/left%03d.jpg",i);
+	  printf("%s %f \n",imName,scale);
+	  tempIm = imread(imName, CV_LOAD_IMAGE_COLOR);
+	  scaleSize.height = tempIm.rows*scale;
+	  scaleSize.width = tempIm.cols*scale;
+
+	  printf("scale height %d width %d\n",scaleSize.height,scaleSize.width);
+	  
+	  sprintf(imName,"%f d",(i*360.0/8));
+	  //Do it on Edges
+	  blur(tempIm,tempEdges,Size(3,3));
+	  Canny(tempEdges,tempEdges,30,50,3);
+
+
+	  blur(imageL,lTempEdges,Size(3,3));
+	  Canny(lTempEdges,lTempEdges,30,50,3);
+      
+	  imshow("template",tempEdges);
+	  waitKey(1000);
+      
+	  getTemplateMatch(lTempEdges,&locUL,&locLR, &tempEdges, &sResponse);
+	  deg = i*(360.0/8);
+	  //printf("LEFT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
+	  Mat imageS = imageL;
+	  rectangle(imageS,locUL,locLR,10,3);
+      
+	  if (lBestResponse > sResponse)
+	    {
+	      lRotI = i;
+	      lBestUL = locUL;
+	      lBestLR = locLR;
+	      lBestResponse = sResponse;
+	      lBestDeg = deg;
+	      printf("lBest Response: %f\n",lBestResponse);
+	    }
+	  rectangle(imageS,lBestUL,lBestLR,100,3);
+	  imshow("Left Image",imageS);
+	  //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
+	  waitKey(10);
 	}
-      rectangle(imageS,lBestUL,lBestLR,100,3);
-      imshow("Left Image",imageS);
-      //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
-      waitKey(10);
     }
   
   printf("\nLBest Estimate of Left Rotation: %f\n",lBestDeg);
@@ -134,7 +152,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
       float deg;
       char imName[30];
       Mat tempIm;  
-      sprintf(imName,"images/templates/right%03d.jpg",i);
+      sprintf(imName,"images/templates/19APR/right%03d.jpg",i);
       printf("%s \n",imName);
       tempIm = imread(imName, CV_LOAD_IMAGE_COLOR);
       //sprintf(imName,"%f d",(i*360.0/8));
@@ -203,35 +221,46 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
 
 
   
+  
   //-- Triangulate distance
-  float dL[3][4];
-  dL[0][0] = 1684.9;
-  dL[0][1] = 0;
-  dL[0][2] = 0;
-  dL[0][3] = 0;
-  dL[1][0] = 0;
-  dL[1][1] = 1728.8;
-  dL[1][2] = 0;
-  dL[1][3] = 0;
-  dL[2][0] = 660.52;
-  dL[2][1] = 291.174;
-  dL[2][2] = 1;
-  dL[2][3] = 0;
-  Mat lProj = Mat(3,4,CV_32FC1, &dL);
-  float dR[3][4];
-  dR[0][0] = 1637.08;
-  dR[0][1] = 32.28;
-  dR[0][2] = -140.30;
-  dR[0][3] = -394655.30;
-  dR[1][0] = -26.01;
-  dR[1][1] = 1678.24;
-  dR[1][2] = 82.60;
-  dR[1][3] = -5163.78;
-  dR[2][0] = 578.76;
-  dR[2][1] = 340.99;
-  dR[2][2] = -32.82;
-  dR[2][3] = -141792.99;
-  Mat rProj = Mat(3,4,CV_32FC1, &dR);
+  // float dL[3][4];
+  // dL[0][0] = 1684.9;
+  // dL[0][1] = 0;
+  // dL[0][2] = 0;
+  // dL[0][3] = 0;
+  // dL[1][0] = 0;
+  // dL[1][1] = 1728.8;
+  // dL[1][2] = 0;
+  // dL[1][3] = 0;
+  // dL[2][0] = 660.52;
+  // dL[2][1] = 291.174;
+  // dL[2][2] = 1;
+  // dL[2][3] = 0;
+  // Mat lProj = Mat(3,4,CV_32FC1, &dL);
+  // float dR[3][4];
+  // dR[0][0] = 1637.08;
+  // dR[0][1] = 32.28;
+  // dR[0][2] = -140.30;
+  // dR[0][3] = -394655.30;
+  // dR[1][0] = -26.01;
+  // dR[1][1] = 1678.24;
+  // dR[1][2] = 82.60;
+  // dR[1][3] = -5163.78;
+  // dR[2][0] = 578.76;
+  // dR[2][1] = 340.99;
+  // dR[2][2] = -32.82;
+  // dR[2][3] = -141792.99;
+  // Mat rProj = Mat(3,4,CV_32FC1, &dR);
+
+  Mat lProj,rProj;
+  string paramsyml = "projmats.yml";
+  FileStorage fsP(paramsyml,FileStorage::READ);
+  fsP["P1"] >>lProj;
+  fsP["P2"] >>rProj;
+
+  std::cout<<"Printing contents of proj mats :"<<std::endl;
+  std::cout<<lProj<<std::endl<<std::endl;
+  std::cout<<rProj<<std::endl<<std::endl;
 
   Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
   std::vector<Point2f> lPoints,rPoints;
@@ -251,6 +280,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR)
  waitKey(10000);
 
   triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
+  //triangulatePoints(lProj2,rProj2,lPoints,rPoints,worldPoints);
 
 
   //-- Normalize by the scale factor

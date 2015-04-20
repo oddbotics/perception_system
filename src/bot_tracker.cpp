@@ -30,10 +30,10 @@ int main( int argc, char** argv )
   int j = atoi(argv[1]);
   
 
-  char imName1[30];
-  char imName2[30];
-  sprintf(imName1,"images/test_images/left%03d.jpg",j);
-  sprintf(imName2,"images/test_images/right%03d.jpg",j);
+  char imName1[40];
+  char imName2[40];
+  sprintf(imName1,"images/test_images/19APR/left%03d.jpg",j);
+  sprintf(imName2,"images/test_images/19APR/right%03d.jpg",j);
   Mat imgL = imread( imName1, CV_LOAD_IMAGE_COLOR );
   Mat imgR = imread( imName2, CV_LOAD_IMAGE_COLOR );
   printf("%s\n",imName1);

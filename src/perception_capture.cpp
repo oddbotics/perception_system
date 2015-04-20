@@ -12,15 +12,20 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-  char folder[20];
+  
+  string folders;
   if (argc !=2)
     {
-      folder ='';
+      folders = "";
     }
   else
     {
-      folder = argv[1];
+      folders = argv[1];
     }
+  
+  char *folder = new char[folders.length()+1];
+  strcpy(folder,folders.c_str());
+
   VideoCapture capture1(1); // open the video file for reading
   VideoCapture capture2(2); 
   //VideoCapture capture1(1); // open the video file for reading
@@ -33,7 +38,6 @@ int main(int argc, char** argv)
 
   int key = 0;
   int n;
-  char buffer[25];
   Mat frame1,frame2;
   vector<Mat> leftImages, rightImages;
   //while(key != 'q')
@@ -61,9 +65,6 @@ int main(int argc, char** argv)
     return -1;
   }
 
-
-    
-  
   leftImages.push_back(frame1);
   
   rightImages.push_back(frame2);
@@ -71,13 +72,21 @@ int main(int argc, char** argv)
   imshow("leftImage",frame1);
   imshow("rightImage",frame2);
   
-  if(i%1000 == 0)
+  char buffer[65]; 
+  int speed = 300;
+  if(i%speed == 0)
     {
-      n = sprintf(buffer,"images/left%03d.jpg",i/1000);
+      n = sprintf(buffer,"images/%s/left%03d.jpg",folder,i/speed);
+      printf("this is the folder: %s\n",buffer);
+      //waitKey(0);
       imwrite(buffer,frame1);
-
-      n = sprintf(buffer,"images/right%03d.jpg",i/1000);
+      n = sprintf(buffer,"images/%s/right%03d.jpg",folder,i/speed);
       imwrite(buffer,frame2);
+      Mat lempty = frame1;
+      GaussianBlur(lempty,lempty,Size(97,97),11,11);
+      imshow("leftImage",lempty);
+      imshow("rightImage",lempty);
+      waitKey(900);
     }
 
   waitKey(10);
