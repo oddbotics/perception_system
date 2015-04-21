@@ -15,6 +15,23 @@ Bot::Bot()
   upperLeft.y = 1;
   lowerRight.x = 100;
   lowerRight.y = 100;
+  showImages = false;
+  //checkBounds(initialIm, &upperLeft, &lowerRight);
+  //templateIm = initialIm(Range(upperLeft.y,lowerRight.y),Range(upperLeft.x,lowerRight.x));
+  updateTemplate = 1;  
+}
+
+
+Bot::Bot(int sI)
+{
+  if(sI == 1)
+    showImages = true;
+  else
+    showImages = false;
+  upperLeft.x = 1;
+  upperLeft.y = 1;
+  lowerRight.x = 100;
+  lowerRight.y = 100;
   inertialTracking = false;
   //checkBounds(initialIm, &upperLeft, &lowerRight);
   //templateIm = initialIm(Range(upperLeft.y,lowerRight.y),Range(upperLeft.x,lowerRight.x));
@@ -88,7 +105,7 @@ void Bot::matchPoints(std::vector<KeyPoint>* keypointsIn1, std::vector<KeyPoint>
 
 }
 
-void Bot::findGoalPos(Mat imageL, Mat imageR)
+void Bot::findGoalPos(Mat imageL, Mat imageR, float *xGoal, float *yGoal, float *tGoal)
 {
   double lBestResponse=100;
   int lMostPoints=0;
@@ -119,21 +136,24 @@ void Bot::findGoalPos(Mat imageL, Mat imageR)
       resize(tempIm,tempIm,scaleSize);
 	 
       //Do it on Edges
-      blur(tempIm,tempEdges,Size(3,3));
-      Canny(tempEdges,tempEdges,120,140,3);
+      //blur(tempIm,tempEdges,Size(3,3));
+      //Canny(tempEdges,tempEdges,120,140,3);
 	  
       //Mat halfImage = lTempEdges(Range(imageL.cols/2,imageL.cols),Range(1,imageL.rows));
       Mat halfImage = imageL(Range(imageL.rows/2,imageL.rows),Range(1,imageL.cols));
 
-      blur(halfImage,lTempEdges,Size(3,3));
-      Canny(lTempEdges,lTempEdges,120,140,3);
+      //blur(halfImage,lTempEdges,Size(3,3));
+      //Canny(lTempEdges,lTempEdges,120,140,3);
 	  
       //templateIm = initialIm(Range(upperLeft.y,lowerRight.y),Range(upperLeft.x,lowerRight.x));
-      imshow("goalTemplate",tempIm);
-      moveWindow("goalTemplate",10,500);
-      //imshow("edges",lTempEdges);
-      waitKey(10);
-	  
+      if(showImages)
+	{
+	  imshow("goalTemplate",tempIm);
+	  moveWindow("goalTemplate",10,500);
+	  //imshow("edges",lTempEdges);
+	  waitKey(10);
+	}	 
+      
       getTemplateMatch(imageL,&locUL,&locLR, &tempIm, &sResponse);
       deg = 0;
 	  
@@ -150,12 +170,15 @@ void Bot::findGoalPos(Mat imageL, Mat imageR)
 	  lBestDeg = deg;
 	  printf("lBest Response: %f\n",lBestResponse);
 	}
-      rectangle(imageS,lBestUL,lBestLR,205,3);
-      imshow("Left Image Goal",imageS);
-      moveWindow("Left Image Goal",200,400);
-      waitKey(10);
+      if(showImages)
+	{
+	  rectangle(imageS,lBestUL,lBestLR,205,3);
+	  imshow("Left Image Goal",imageS);
+	  moveWindow("Left Image Goal",200,400);
+	  waitKey(10);
+	}
     }
-    
+  
 
   //-- Check right image for goal
   for (float scale=.7;scale < 2.00; scale=scale+.10)
@@ -175,17 +198,18 @@ void Bot::findGoalPos(Mat imageL, Mat imageR)
       resize(tempIm,tempIm,scaleSize);
 	 
       //Do it on Edges
-      blur(tempIm,tempEdges,Size(3,3));
-      Canny(tempEdges,tempEdges,100,120,3);
+      //blur(tempIm,tempEdges,Size(3,3));
+      //Canny(tempEdges,tempEdges,100,120,3);
 
-      blur(imageR,rTempEdges,Size(3,3));
-      Canny(rTempEdges,rTempEdges,100,120,3);
+      //blur(imageR,rTempEdges,Size(3,3));
+      //Canny(rTempEdges,rTempEdges,100,120,3);
 
       Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
-
-      imshow("goalTemplate",tempIm);
-      //waitKey(10);
-      
+      if(showImages)
+	{
+	  imshow("goalTemplate",tempIm);
+	  //waitKey(10);
+	}
       getTemplateMatch(imageR,&locUL,&locLR, &tempIm, &sResponse);
       deg = 0;
       //printf("LEFT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
@@ -202,9 +226,12 @@ void Bot::findGoalPos(Mat imageL, Mat imageR)
 	  rBestDeg = deg;
 	  printf("rBest Response: %f\n",rBestResponse);
 	}
-      rectangle(imageS,rBestUL,rBestLR,200,3);
-      imshow("Right Image Goal",imageS);
-      moveWindow("Right Image Goal",200,500);
+      if(showImages)
+	{
+	  rectangle(imageS,rBestUL,rBestLR,200,3);
+	  imshow("Right Image Goal",imageS);
+	  moveWindow("Right Image Goal",200,500);
+	}
       //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
       waitKey(10);
     }
@@ -213,147 +240,147 @@ void Bot::findGoalPos(Mat imageL, Mat imageR)
   //-- Estimate a box 
 
   //-- Match points inside the boxes in the Left and Right images
-   int minHessian = 400;
+  //  int minHessian = 400;
 
-  SurfFeatureDetector detector( minHessian );
+ //  SurfFeatureDetector detector( minHessian );
 
-  std::vector<KeyPoint> keypointsL, keypointsR, keypointsBotL, keypointsBotR, keypointsGML, keypointsGMR;
+ //  std::vector<KeyPoint> keypointsL, keypointsR, keypointsBotL, keypointsBotR, keypointsGML, keypointsGMR;
 
-  detector.detect( imageL, keypointsL );
-  detector.detect( imageR, keypointsR );
+ //  detector.detect( imageL, keypointsL );
+ //  detector.detect( imageR, keypointsR );
 
-  Mat imgKeypointsL; Mat imgKeypointsR;
+ //  Mat imgKeypointsL; Mat imgKeypointsR;
   
-  //-- Detect keypoints that are within the box -LEFT
+ //  //-- Detect keypoints that are within the box -LEFT
 
-  Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
+ //  Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
 	  
   
-  for (int i = 0; i < keypointsL.size(); i++)
-    {
-      if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
-	  keypointsL[i].pt.y < (lBestLR.y /*+ imageL.rows/2 */) && keypointsL[i].pt.y > (lBestUL.y /*+ imageL.rows/2*/))
-	{
-	  keypointsBotL.push_back(keypointsL[i]);
-	}
-    }
- //-- Detect keypoints that are within the box - RIGHT
+ //  for (int i = 0; i < keypointsL.size(); i++)
+ //    {
+ //      if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
+ // 	  keypointsL[i].pt.y < (lBestLR.y /*+ imageL.rows/2 */) && keypointsL[i].pt.y > (lBestUL.y /*+ imageL.rows/2*/))
+ // 	{
+ // 	  keypointsBotL.push_back(keypointsL[i]);
+ // 	}
+ //    }
+ // //-- Detect keypoints that are within the box - RIGHT
  
- for (int i = 0; i < keypointsR.size(); i++)
-    {
-      if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
-	  keypointsR[i].pt.y < (rBestLR.y /*+ imageR.rows/2*/) && keypointsR[i].pt.y > (rBestUL.y /*+ imageR.rows/2*/))
-	{
-	  keypointsBotR.push_back(keypointsR[i]);
-	}
-    }
-  //-- Match points from within the box to the next frame
-  matchPoints(&keypointsBotL,&keypointsBotR,imageL,imageR,&keypointsGML,&keypointsGMR,5.1);
+ // for (int i = 0; i < keypointsR.size(); i++)
+ //    {
+ //      if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
+ // 	  keypointsR[i].pt.y < (rBestLR.y /*+ imageR.rows/2*/) && keypointsR[i].pt.y > (rBestUL.y /*+ imageR.rows/2*/))
+ // 	{
+ // 	  keypointsBotR.push_back(keypointsR[i]);
+ // 	}
+ //    }
+ //  //-- Match points from within the box to the next frame
+ //  matchPoints(&keypointsBotL,&keypointsBotR,imageL,imageR,&keypointsGML,&keypointsGMR,5.1);
   
   
   //-- Triangulate distance
   
-  Mat lProj,rProj;
-  string paramsyml = "projmats.yml";
-  FileStorage fsP(paramsyml,FileStorage::READ);
-  fsP["P1"] >>lProj;
-  fsP["P2"] >>rProj;
+  // Mat lProj,rProj;
+ //  string paramsyml = "projmats.yml";
+ //  FileStorage fsP(paramsyml,FileStorage::READ);
+ //  fsP["P1"] >>lProj;
+ //  fsP["P2"] >>rProj;
 
-  Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
-  std::vector<Point2f> lPoints,rPoints;
-  for (int i = 0; i < keypointsGML.size(); i++)
-    {
-      lPoints.push_back(keypointsGML[i].pt);
-    }
- for (int i = 0; i < keypointsGMR.size(); i++)
-    {
-      rPoints.push_back(keypointsGMR[i].pt);
-    }
- drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
- drawKeypoints( imageR, keypointsGMR, imageWithKeyPointsR, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+ //  Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
+ //  std::vector<Point2f> lPoints,rPoints;
+ //  for (int i = 0; i < keypointsGML.size(); i++)
+ //    {
+ //      lPoints.push_back(keypointsGML[i].pt);
+ //    }
+ // for (int i = 0; i < keypointsGMR.size(); i++)
+ //    {
+ //      rPoints.push_back(keypointsGMR[i].pt);
+ //    }
+ // drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+ // drawKeypoints( imageR, keypointsGMR, imageWithKeyPointsR, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
 
- //imshow("With Keypoints L - GOAL", imageWithKeyPointsL);
- //imshow("With Keypoints R - GOAL", imageWithKeyPointsR);
- waitKey(10);
+ // //imshow("With Keypoints L - GOAL", imageWithKeyPointsL);
+ // //imshow("With Keypoints R - GOAL", imageWithKeyPointsR);
+ // waitKey(10);
 
- Point2f tempPoint;
- //left 0,0
- tempPoint.x = 206;
- tempPoint.y = 568;
- lPoints.push_back(tempPoint);
- //left 0,10
- tempPoint.x = 252;
- tempPoint.y = 409;
- lPoints.push_back(tempPoint);
- //left 10,0
- tempPoint.x = 1134;
- tempPoint.y = 502;
- lPoints.push_back(tempPoint);
- //left 10,10
- tempPoint.x = 762;
- tempPoint.y = 395;
- lPoints.push_back(tempPoint);
+ // Point2f tempPoint;
+ // //left 0,0
+ // tempPoint.x = 206;
+ // tempPoint.y = 568;
+ // lPoints.push_back(tempPoint);
+ // //left 0,10
+ // tempPoint.x = 252;
+ // tempPoint.y = 409;
+ // lPoints.push_back(tempPoint);
+ // //left 10,0
+ // tempPoint.x = 1134;
+ // tempPoint.y = 502;
+ // lPoints.push_back(tempPoint);
+ // //left 10,10
+ // tempPoint.x = 762;
+ // tempPoint.y = 395;
+ // lPoints.push_back(tempPoint);
 
- //right 0,0
- tempPoint.x = 71;
- tempPoint.y = 636;
- rPoints.push_back(tempPoint);
- //right 0,10
- tempPoint.x = 169;
- tempPoint.y = 474;
- rPoints.push_back(tempPoint);
- //right 10,0
- tempPoint.x = 1018;
- tempPoint.y = 545;
- rPoints.push_back(tempPoint);
- //right 10,10
- tempPoint.x = 689;
- tempPoint.y = 449;
- rPoints.push_back(tempPoint);
+ // //right 0,0
+ // tempPoint.x = 71;
+ // tempPoint.y = 636;
+ // rPoints.push_back(tempPoint);
+ // //right 0,10
+ // tempPoint.x = 169;
+ // tempPoint.y = 474;
+ // rPoints.push_back(tempPoint);
+ // //right 10,0
+ // tempPoint.x = 1018;
+ // tempPoint.y = 545;
+ // rPoints.push_back(tempPoint);
+ // //right 10,10
+ // tempPoint.x = 689;
+ // tempPoint.y = 449;
+ // rPoints.push_back(tempPoint);
 
- //std::cout << "\n2D POINTS" << std::endl << lPoints << std::endl << rPoints <<std::endl;
+ // //std::cout << "\n2D POINTS" << std::endl << lPoints << std::endl << rPoints <<std::endl;
  
- triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
-  //triangulatePoints(lProj2,rProj2,lPoints,rPoints,worldPoints);
+ // triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
+ //  //triangulatePoints(lProj2,rProj2,lPoints,rPoints,worldPoints);
 
- //-- Normalize by the scale factor
- //-- And get the average of the values
- //-- Make sure to not include the four boundary points in the average
-  std::vector<float> x,y,z;
-  for (int i = 0; i < (worldPoints.cols - 4); i++)
-    {
-      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
-      x.push_back(worldPoints.at<float>(0,i));
-      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
-      y.push_back(worldPoints.at<float>(1,i));
-      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
-      z.push_back(worldPoints.at<float>(2,i));
-      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
-    }
+ // //-- Normalize by the scale factor
+ // //-- And get the average of the values
+ // //-- Make sure to not include the four boundary points in the average
+ //  std::vector<float> x,y,z;
+ //  for (int i = 0; i < (worldPoints.cols - 4); i++)
+ //    {
+ //      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
+ //      x.push_back(worldPoints.at<float>(0,i));
+ //      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
+ //      y.push_back(worldPoints.at<float>(1,i));
+ //      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
+ //      z.push_back(worldPoints.at<float>(2,i));
+ //      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
+ //    }
 
- float avgX = std::accumulate(x.begin(), x.end(), 0) / (float)x.size();
- float avgY = std::accumulate(y.begin(), y.end(), 0) / (float)y.size();
- float avgZ = std::accumulate(z.begin(), z.end(), 0) / (float)z.size();
+ // float avgX = std::accumulate(x.begin(), x.end(), 0) / (float)x.size();
+ // float avgY = std::accumulate(y.begin(), y.end(), 0) / (float)y.size();
+ // float avgZ = std::accumulate(z.begin(), z.end(), 0) / (float)z.size();
 
- //std::cout<< "\nworldPoints: "<< std::endl << worldPoints << std::endl;
-  // printf("WorldPoints: \n",worldPoints);
-  // printf("Avg X: %f\n",avgX);
-  // printf("Avg Y: %f\n",avgY);
-  // printf("Avg Z: %f\n",avgZ);
+ // //std::cout<< "\nworldPoints: "<< std::endl << worldPoints << std::endl;
+ //  // printf("WorldPoints: \n",worldPoints);
+ //  // printf("Avg X: %f\n",avgX);
+ //  // printf("Avg Y: %f\n",avgY);
+ //  // printf("Avg Z: %f\n",avgZ);
 
-  for (int i = (worldPoints.cols - 4); i < worldPoints.cols; i++)
-    {
-      //printf("i: %d\n",i);
-      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
-      //printf("X:  %f\n",worldPoints.at<float>(0,i));
-      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
-      //printf("Y:  %f\n",worldPoints.at<float>(1,i));
-      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
-      //printf("Z:  %f\n",worldPoints.at<float>(2,i));
-      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
-    }
+ //  for (int i = (worldPoints.cols - 4); i < worldPoints.cols; i++)
+ //    {
+ //      //printf("i: %d\n",i);
+ //      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
+ //      //printf("X:  %f\n",worldPoints.at<float>(0,i));
+ //      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
+ //      //printf("Y:  %f\n",worldPoints.at<float>(1,i));
+ //      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
+ //      //printf("Z:  %f\n",worldPoints.at<float>(2,i));
+ //      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
+ //    }
 
-  Mat boundW = worldPoints(Range(0,(worldPoints.rows-1)),Range(worldPoints.cols-4,worldPoints.cols));
+ //  Mat boundW = worldPoints(Range(0,(worldPoints.rows-1)),Range(worldPoints.cols-4,worldPoints.cols));
 
   //std::cout << std::endl << boundW << std::endl;
 
@@ -367,28 +394,61 @@ void Bot::findGoalPos(Mat imageL, Mat imageR)
       rBestDeg = 360.0;
     }
       
-  printf("\nScale: %f\n",(lScale + rScale)/2);
+  //  printf("\nScale: %f\n",(lScale + rScale)/2);
 
-  printf("leftLoc %d %d\n",(lBestUL.x + lBestLR.x)/2,(lBestUL.y + lBestLR.y)/2);
-  printf("rightLoc %d %d\n",(rBestUL.x + rBestLR.x)/2,(rBestUL.y + rBestLR.y)/2);
+  //printf("leftLoc %d %d\n",(lBestUL.x + lBestLR.x)/2,(lBestUL.y + lBestLR.y)/2);
+  //printf("rightLoc %d %d\n",(rBestUL.x + rBestLR.x)/2,(rBestUL.y + rBestLR.y)/2);
   
-  Mat boundP = Mat::zeros(3, 4, CV_32F);
+  // Mat boundP = Mat::zeros(3, 4, CV_32F);
 
-  boundP.at<float>(1,1) = 10.0;
-  boundP.at<float>(0,2) = 10.0;
-  boundP.at<float>(0,3) = 10.0;
-  boundP.at<float>(1,3) = 10.0;
+  // boundP.at<float>(1,1) = 10.0;
+  // boundP.at<float>(0,2) = 10.0;
+  // boundP.at<float>(0,3) = 10.0;
+  // boundP.at<float>(1,3) = 10.0;
 
-  //std::cout << boundP << std::endl;
+  // //std::cout << boundP << std::endl;
 
-  Mat warp_mat( 3, 4, CV_32FC1 );
+  // Mat warp_mat( 3, 4, CV_32FC1 );
   //warp_mat = getAffineTransform( boundW,boundP);
   //std::vector<T>::const_iterator first  = worldPoints.end() - 4;
   // std::vector<T>::const_iterator last = worldPoints.end();
   // std::vector<T> inBound(first, last);
+
+ if(lBestDeg == 0 && rBestDeg > 180)
+    {
+      lBestDeg = 360.0;
+    }
+  if(rBestDeg == 0 && lBestDeg > 180)
+    {
+      rBestDeg = 360.0;
+    }
+
+  float bestDeg = (lBestDeg + rBestDeg)/2 + 45.0;
+  if (bestDeg > 360)
+    {
+      bestDeg = bestDeg - 360.0;
+    }
+  printf("\nScale: %f\n",(lScale + rScale)/2);
+
+  printf("leftLoc %d %d\n",(lBestUL.x + lBestLR.x)/2,(lBestUL.y + lBestLR.y)/2);
+  printf("rightLoc %d %d\n",(rBestUL.x + rBestLR.x)/2,(rBestUL.y + rBestLR.y)/2);
+
+
+  printf("\nBest Estimate of Rotation: %f\n",bestDeg);
+
+  //-- Translate scale and position
+  float yTrans = 5.8365 - 3.3654*(lScale + rScale)/2;
+  float xLeftTrans = ((lBestUL.x + lBestLR.x)/2 - 250)*(4.25/(1100-250));
+  float xRightTrans = ((rBestUL.x + rBestLR.x)/2 - 150)*(4.25/(1000-150));
+
+  *yGoal = yTrans;
+  *xGoal = (xLeftTrans+xRightTrans)/2;
+  *tGoal = bestDeg;
+
+  printf("Estimate of X,Y pos of GOAL: %f %f",(xLeftTrans+xRightTrans)/2,yTrans);
+    
   
-  
-  waitKey(10000);  
+  waitKey(1);  
 
 }
 
@@ -438,11 +498,14 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 	  //Canny(lTempEdges,lTempEdges,120,140,3);
 	  
 	  //templateIm = initialIm(Range(upperLeft.y,lowerRight.y),Range(upperLeft.x,lowerRight.x));
-	  imshow("template",tempIm);
-	  moveWindow("template",10,10);
-	  //imshow("edges",lTempEdges);
-	  waitKey(1);
-	  
+	  if(showImages)
+	    {
+	      imshow("template",tempIm);
+	      moveWindow("template",10,10);
+	      //imshow("edges",lTempEdges);
+	      waitKey(1);
+	    }	  
+
 	  getTemplateMatch(halfImage,&locUL,&locLR, &tempIm, &sResponse);
 	  // getTemplateMatch(lTempEdges,&locUL,&locLR, &tempEdges, &sResponse);
 	  // getTemplateMatch(imageL,&locUL,&locLR, &tempIm, &sResponse);
@@ -462,11 +525,14 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 	      lBestLR = locLR;
 	      lBestResponse = sResponse;
 	      lBestDeg = deg;
-	      printf("lBest Response: %f\n",lBestResponse);
+	      //printf("lBest Response: %f\n",lBestResponse);
 	    }
+	  if(showImages)
+	    {
 	  rectangle(imageS,lBestUL,lBestLR,205,3);
 	  imshow("Left Image",imageS);
 	  moveWindow("Left Image",300,10);
+	    }
 	  //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
 
 	  //-- MATCHING SURF FEATURES
@@ -517,7 +583,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 	  //     printf("---Highest Match Rotation is %f\n",deg);
 	  //   }
 
-	  waitKey(1);
+	  //waitKey(1);
 	}
     }
   
@@ -554,11 +620,12 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 	  //Canny(rTempEdges,rTempEdges,100,120,3);
 
 	  Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
-
-	  imshow("template",tempIm);
-	  moveWindow("template",10,10);
-	  //waitKey(1);
-      
+	  if(showImages)
+	    {
+	      imshow("template",tempIm);
+	      moveWindow("template",10,10);
+	      waitKey(1);
+	    }
 	  getTemplateMatch(halfImage,&locUL,&locLR, &tempIm, &sResponse);
 	  deg = (i-1)*(360.0/8);
 	  //printf("LEFT\ndegree: %f \ntemplate: %d \nlocUL-x: %d \nlocUL-y: %d \nlocLR-x: %d\nlocLR-y: %d\n",deg,i,locUL.x,locUL.y,locLR.x,locLR.y);
@@ -573,13 +640,16 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 	      rBestLR = locLR;
 	      rBestResponse = sResponse;
 	      rBestDeg = deg;
-	      printf("rBest Response: %f\n",rBestResponse);
+	      //printf("rBest Response: %f\n",rBestResponse);
 	    }
-	  rectangle(imageS,rBestUL,rBestLR,200,3);
-	  imshow("Right Image",imageS);
-	  moveWindow("Right Image",300,250);
-	  //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
-	  waitKey(1);
+	  if(showImages)
+	    {
+	      rectangle(imageS,rBestUL,rBestLR,200,3);
+	      imshow("Right Image",imageS);
+	      moveWindow("Right Image",300,250);
+	      
+	      waitKey(1);
+	    }
 	}
     }
   
@@ -777,23 +847,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 
 
   printf("Estimate of X,Y pos: %f %f",(xLeftTrans+xRightTrans)/2,yTrans);
-  
-  // Mat boundP = Mat::zeros(3, 4, CV_32F);
-
-  // boundP.at<float>(1,1) = 10.0;
-  // boundP.at<float>(0,2) = 10.0;
-  // boundP.at<float>(0,3) = 10.0;
-  // boundP.at<float>(1,3) = 10.0;
-
-  // //std::cout << boundP << std::endl;
-
-  // Mat warp_mat( 3, 4, CV_32FC1 );
-  //warp_mat = getAffineTransform( boundW,boundP);
-  //std::vector<T>::const_iterator first  = worldPoints.end() - 4;
-  // std::vector<T>::const_iterator last = worldPoints.end();
-  // std::vector<T> inBound(first, last);
-  
-  
+   
   waitKey(10);
 }
 

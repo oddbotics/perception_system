@@ -38,12 +38,16 @@ void perceptionTracker::publishMessage(ros::Publisher *pub_message)
 }
 
 
-
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "perception_tracker");
   ros::NodeHandle nh;
-  Bot *oddBot = new Bot();
+  int showI;
+  if(argc < 2)
+    showI = 0;
+  else
+    showI = atoi(argv[1]);
+  Bot *oddBot = new Bot(showI);
   
   float xRobot,yRobot,tRobot;
   perceptionTracker *perc_track= new perceptionTracker();

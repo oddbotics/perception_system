@@ -27,15 +27,17 @@ class Bot
 {
  public:
   Bot();
+  Bot(int);
   Bot(Point uL, Point lR);
   ~Bot();
   
   void updateBoxPos(Mat image1, Mat image2, float*, float*, float*);
-  void findGoalPos(Mat image1, Mat image2);
+  void findGoalPos(Mat image1, Mat image2, float*, float*, float*);
   void updateBoxSize(Mat image);
   bool unitTest(Mat image);
 
  private:
+  bool showImages;
   Point upperLeft;
   Point lowerRight;
   bool inertialTracking; 
