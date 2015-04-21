@@ -7,6 +7,7 @@
 
 
 #include "perception_system/perception_tracker.h"
+#include "perception_system/bot.h"
 
 
 perceptionTracker::perceptionTracker()
@@ -42,7 +43,8 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "perception_tracker");
   ros::NodeHandle nh;
-  Bot oddBot();
+  Bot *oddBot = new Bot();
+  
   float xRobot,yRobot,tRobot;
   perceptionTracker *perc_track= new perceptionTracker();
 
@@ -54,7 +56,7 @@ int main(int argc, char **argv)
   gPub.publish(perc_track->goalPose);
 
 
-  ros::Rate r(30);
+  ros::Rate r(100);
 
   cv::VideoCapture capture1(1); // open the video file for reading
   cv::VideoCapture capture2(2); 
@@ -68,10 +70,10 @@ int main(int argc, char **argv)
      
 
   if(!capture1.isOpened()){
-    cout << "Failed to connect to the camera 1." << endl;
+    std::cout << "Failed to connect to the camera 1." << std::endl;
   }
   if(!capture2.isOpened()){
-    cout << "Failed to connect to the camera 2." << endl;
+    std::cout << "Failed to connect to the camera 2." << std::endl;
   }    
 
 
@@ -79,19 +81,32 @@ int main(int argc, char **argv)
     {
       //Do the OPENCV stuff
 
-      Mat imgL,imgR;
+      cv::Mat imgL,imgR;
       capture1>>imgL;
       capture2>>imgR;
+
+      // while(!imgL.empty())
+      for(int i = 0; i < 100; i++)
+	{
+	  capture1>>imgL;
+	  capture2>>imgR;
+	  waitKey(1);
+	}
+      waitKey(1);
+      capture1>>imgL;
+      capture2>>imgR;
+
       if(imgL.empty()){
-	cout << "Failed to capture an image on camera 1" << endl;
+	std::cout << "Failed to capture an image on camera 1" << std::endl;
 	return -1;
       }
       if(imgR.empty()){
-	cout << "Failed to capture an image on camera 2" << endl;
+	std::cout << "Failed to capture an image on camera 2" << std::endl;
 	return -1;
       }
-
-      oddBot.updateBoxPos(imgL, imgR,&xRobot,&yRobot,&tRobot);
+      // cv::imshow("Left Image - ", imgL);
+      // waitKey(1000);
+      oddBot->updateBoxPos(imgL, imgR,&xRobot,&yRobot,&tRobot);
       perc_track->robotPose.x = xRobot;
       perc_track->robotPose.y = yRobot;
       perc_track->robotPose.theta = tRobot;

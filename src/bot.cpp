@@ -9,6 +9,18 @@
 #include "perception_system/bot.h"
 using namespace cv;
 
+Bot::Bot()
+{
+  upperLeft.x = 1;
+  upperLeft.y = 1;
+  lowerRight.x = 100;
+  lowerRight.y = 100;
+  inertialTracking = false;
+  //checkBounds(initialIm, &upperLeft, &lowerRight);
+  //templateIm = initialIm(Range(upperLeft.y,lowerRight.y),Range(upperLeft.x,lowerRight.x));
+  updateTemplate = 1;  
+}
+
 Bot::Bot(Point uL, Point lR)
 {
   upperLeft = uL;
@@ -172,7 +184,7 @@ void Bot::findGoalPos(Mat imageL, Mat imageR)
       Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
 
       imshow("goalTemplate",tempIm);
-      waitKey(10);
+      //waitKey(10);
       
       getTemplateMatch(imageR,&locUL,&locLR, &tempIm, &sResponse);
       deg = 0;
@@ -396,7 +408,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
   //-- Check left image for robot 
   for (int i=1;i<9;i++)
     {
-      for (float scale=.7;scale < 2.00; scale=scale+.10)
+      for (float scale=.6;scale < 2.00; scale=scale+.15)
 	{
 	  Point locUL,locLR;
 	  double sResponse;
@@ -416,14 +428,14 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 	  resize(tempIm,tempIm,scaleSize);
 	 
 	  //Do it on Edges
-	  blur(tempIm,tempEdges,Size(3,3));
-	  Canny(tempEdges,tempEdges,120,140,3);
+	  //blur(tempIm,tempEdges,Size(3,3));
+	  //Canny(tempEdges,tempEdges,120,140,3);
 	  
 	  //Mat halfImage = lTempEdges(Range(imageL.cols/2,imageL.cols),Range(1,imageL.rows));
 	  Mat halfImage = imageL(Range(imageL.rows/2,imageL.rows),Range(1,imageL.cols));
 
-	  blur(halfImage,lTempEdges,Size(3,3));
-	  Canny(lTempEdges,lTempEdges,120,140,3);
+	  //blur(halfImage,lTempEdges,Size(3,3));
+	  //Canny(lTempEdges,lTempEdges,120,140,3);
 	  
 	  //templateIm = initialIm(Range(upperLeft.y,lowerRight.y),Range(upperLeft.x,lowerRight.x));
 	  imshow("template",tempIm);
@@ -514,7 +526,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
   //-- Check right image for robot 
   for (int i=1;i<9;i++)
     {
-      for (float scale=.7;scale < 2.00; scale=scale+.10)
+      for (float scale=.6;scale < 2.00; scale=scale+.15)
 	{
 	  Point locUL,locLR;
 	  double sResponse;
@@ -534,18 +546,18 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 	  resize(tempIm,tempIm,scaleSize);
 	 
 	  //Do it on Edges
-	  blur(tempIm,tempEdges,Size(3,3));
-	  Canny(tempEdges,tempEdges,100,120,3);
+	  //blur(tempIm,tempEdges,Size(3,3));
+	  //Canny(tempEdges,tempEdges,100,120,3);
 
 
-	  blur(imageR,rTempEdges,Size(3,3));
-	  Canny(rTempEdges,rTempEdges,100,120,3);
+	  //blur(imageR,rTempEdges,Size(3,3));
+	  //Canny(rTempEdges,rTempEdges,100,120,3);
 
 	  Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
 
 	  imshow("template",tempIm);
 	  moveWindow("template",10,10);
-	  waitKey(1);
+	  //waitKey(1);
       
 	  getTemplateMatch(halfImage,&locUL,&locLR, &tempIm, &sResponse);
 	  deg = (i-1)*(360.0/8);
@@ -565,7 +577,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 	    }
 	  rectangle(imageS,rBestUL,rBestLR,200,3);
 	  imshow("Right Image",imageS);
-	  moveWindow("Right Image",300,150);
+	  moveWindow("Right Image",300,250);
 	  //rectangle(imgKeypoints1,upperLeft,lowerRight,10,3);
 	  waitKey(1);
 	}
@@ -576,51 +588,51 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
   //-- Estimate a box 
 
   //-- Match points inside the boxes in the Left and Right images
-   int minHessian = 400;
+  //  int minHessian = 400;
 
-  SurfFeatureDetector detector( minHessian );
+ //  SurfFeatureDetector detector( minHessian );
 
-  std::vector<KeyPoint> keypointsL, keypointsR, keypointsBotL, keypointsBotR, keypointsGML, keypointsGMR;
+ //  std::vector<KeyPoint> keypointsL, keypointsR, keypointsBotL, keypointsBotR, keypointsGML, keypointsGMR;
 
-  detector.detect( imageL, keypointsL );
-  detector.detect( imageR, keypointsR );
+ //  detector.detect( imageL, keypointsL );
+ //  detector.detect( imageR, keypointsR );
 
-  Mat imgKeypointsL; Mat imgKeypointsR;
+ //  Mat imgKeypointsL; Mat imgKeypointsR;
   
-  //-- Detect keypoints that are within the box -LEFT
+ //  //-- Detect keypoints that are within the box -LEFT
 
-  Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
+ //  Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
 	  
   
-  for (int i = 0; i < keypointsL.size(); i++)
-    {
-      if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
-	  keypointsL[i].pt.y < (lBestLR.y + imageL.rows/2) && keypointsL[i].pt.y > (lBestUL.y + imageL.rows/2))
-	{
-	  keypointsBotL.push_back(keypointsL[i]);
-	}
-    }
- //-- Detect keypoints that are within the box - RIGHT
+ //  for (int i = 0; i < keypointsL.size(); i++)
+ //    {
+ //      if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
+ // 	  keypointsL[i].pt.y < (lBestLR.y + imageL.rows/2) && keypointsL[i].pt.y > (lBestUL.y + imageL.rows/2))
+ // 	{
+ // 	  keypointsBotL.push_back(keypointsL[i]);
+ // 	}
+ //    }
+ // //-- Detect keypoints that are within the box - RIGHT
  
- for (int i = 0; i < keypointsR.size(); i++)
-    {
-      if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
-	  keypointsR[i].pt.y < (rBestLR.y + imageR.rows/2) && keypointsR[i].pt.y > (rBestUL.y + imageR.rows/2))
-	{
-	  keypointsBotR.push_back(keypointsR[i]);
-	}
-    }
+ // for (int i = 0; i < keypointsR.size(); i++)
+ //    {
+ //      if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
+ // 	  keypointsR[i].pt.y < (rBestLR.y + imageR.rows/2) && keypointsR[i].pt.y > (rBestUL.y + imageR.rows/2))
+ // 	{
+ // 	  keypointsBotR.push_back(keypointsR[i]);
+ // 	}
+ //    }
   //-- Match points from within the box to the next frame
-  matchPoints(&keypointsBotL,&keypointsBotR,imageL,imageR,&keypointsGML,&keypointsGMR,5.1);
+  //matchPoints(&keypointsBotL,&keypointsBotR,imageL,imageR,&keypointsGML,&keypointsGMR,5.1);
   
   
   //-- Triangulate distance
   
-  Mat lProj,rProj;
-  string paramsyml = "projmats.yml";
-  FileStorage fsP(paramsyml,FileStorage::READ);
-  fsP["P1"] >>lProj;
-  fsP["P2"] >>rProj;
+  // Mat lProj,rProj;
+  // string paramsyml = "projmats.yml";
+  // FileStorage fsP(paramsyml,FileStorage::READ);
+  // fsP["P1"] >>lProj;
+  // fsP["P2"] >>rProj;
 
   // std::cout<<"Printing contents of proj mats :"<<std::endl;
   // std::cout<<lProj<<std::endl<<std::endl;
@@ -633,101 +645,101 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
   // fsP["leftP"] >>stLP;
   // fsP["rightP"] >>stRP;
 
-  Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
-  std::vector<Point2f> lPoints,rPoints;
-  for (int i = 0; i < keypointsGML.size(); i++)
-    {
-      lPoints.push_back(keypointsGML[i].pt);
-    }
- for (int i = 0; i < keypointsGMR.size(); i++)
-    {
-      rPoints.push_back(keypointsGMR[i].pt);
-    }
- drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
- drawKeypoints( imageR, keypointsGMR, imageWithKeyPointsR, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+  // Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
+ //  std::vector<Point2f> lPoints,rPoints;
+ //  for (int i = 0; i < keypointsGML.size(); i++)
+ //    {
+ //      lPoints.push_back(keypointsGML[i].pt);
+ //    }
+ // for (int i = 0; i < keypointsGMR.size(); i++)
+ //    {
+ //      rPoints.push_back(keypointsGMR[i].pt);
+ //    }
+ // drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+ // drawKeypoints( imageR, keypointsGMR, imageWithKeyPointsR, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
 
- //imshow("With Keypoints L", imageWithKeyPointsL);
- //imshow("With Keypoints R", imageWithKeyPointsR);
- waitKey(10);
+ // //imshow("With Keypoints L", imageWithKeyPointsL);
+ // //imshow("With Keypoints R", imageWithKeyPointsR);
+ // waitKey(10);
 
- Point2f tempPoint;
- //left 0,0
- tempPoint.x = 206;
- tempPoint.y = 568;
- lPoints.push_back(tempPoint);
- //left 0,10
- tempPoint.x = 252;
- tempPoint.y = 409;
- lPoints.push_back(tempPoint);
- //left 10,0
- tempPoint.x = 1134;
- tempPoint.y = 502;
- lPoints.push_back(tempPoint);
- //left 10,10
- tempPoint.x = 762;
- tempPoint.y = 395;
- lPoints.push_back(tempPoint);
+ // Point2f tempPoint;
+ // //left 0,0
+ // tempPoint.x = 206;
+ // tempPoint.y = 568;
+ // lPoints.push_back(tempPoint);
+ // //left 0,10
+ // tempPoint.x = 252;
+ // tempPoint.y = 409;
+ // lPoints.push_back(tempPoint);
+ // //left 10,0
+ // tempPoint.x = 1134;
+ // tempPoint.y = 502;
+ // lPoints.push_back(tempPoint);
+ // //left 10,10
+ // tempPoint.x = 762;
+ // tempPoint.y = 395;
+ // lPoints.push_back(tempPoint);
 
- //right 0,0
- tempPoint.x = 71;
- tempPoint.y = 636;
- rPoints.push_back(tempPoint);
- //right 0,10
- tempPoint.x = 169;
- tempPoint.y = 474;
- rPoints.push_back(tempPoint);
- //right 10,0
- tempPoint.x = 1018;
- tempPoint.y = 545;
- rPoints.push_back(tempPoint);
- //right 10,10
- tempPoint.x = 689;
- tempPoint.y = 449;
- rPoints.push_back(tempPoint);
+ // //right 0,0
+ // tempPoint.x = 71;
+ // tempPoint.y = 636;
+ // rPoints.push_back(tempPoint);
+ // //right 0,10
+ // tempPoint.x = 169;
+ // tempPoint.y = 474;
+ // rPoints.push_back(tempPoint);
+ // //right 10,0
+ // tempPoint.x = 1018;
+ // tempPoint.y = 545;
+ // rPoints.push_back(tempPoint);
+ // //right 10,10
+ // tempPoint.x = 689;
+ // tempPoint.y = 449;
+ // rPoints.push_back(tempPoint);
 
- //std::cout << "\n2D POINTS" << std::endl << lPoints << std::endl << rPoints <<std::endl;
+ // //std::cout << "\n2D POINTS" << std::endl << lPoints << std::endl << rPoints <<std::endl;
  
- triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
-  //triangulatePoints(lProj2,rProj2,lPoints,rPoints,worldPoints);
+ // triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
+ //  //triangulatePoints(lProj2,rProj2,lPoints,rPoints,worldPoints);
 
- //-- Normalize by the scale factor
- //-- And get the average of the values
- //-- Make sure to not include the four boundary points in the average
-  std::vector<float> x,y,z;
-  for (int i = 0; i < (worldPoints.cols - 4); i++)
-    {
-      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
-      x.push_back(worldPoints.at<float>(0,i));
-      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
-      y.push_back(worldPoints.at<float>(1,i));
-      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
-      z.push_back(worldPoints.at<float>(2,i));
-      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
-    }
+ // //-- Normalize by the scale factor
+ // //-- And get the average of the values
+ // //-- Make sure to not include the four boundary points in the average
+ //  std::vector<float> x,y,z;
+ //  for (int i = 0; i < (worldPoints.cols - 4); i++)
+ //    {
+ //      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
+ //      x.push_back(worldPoints.at<float>(0,i));
+ //      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
+ //      y.push_back(worldPoints.at<float>(1,i));
+ //      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
+ //      z.push_back(worldPoints.at<float>(2,i));
+ //      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
+ //    }
 
-  float avgX = std::accumulate(x.begin(), x.end(), 0) / (float)x.size();
-  float avgY = std::accumulate(y.begin(), y.end(), 0) / (float)y.size();
-  float avgZ = std::accumulate(z.begin(), z.end(), 0) / (float)z.size();
+ //  float avgX = std::accumulate(x.begin(), x.end(), 0) / (float)x.size();
+ //  float avgY = std::accumulate(y.begin(), y.end(), 0) / (float)y.size();
+ //  float avgZ = std::accumulate(z.begin(), z.end(), 0) / (float)z.size();
 
-  //std::cout<< "\nworldPoints: "<< std::endl << worldPoints << std::endl;
-  // printf("WorldPoints: \n",worldPoints);
-  // printf("Avg X: %f\n",avgX);
-  // printf("Avg Y: %f\n",avgY);
-  // printf("Avg Z: %f\n",avgZ);
+ //  //std::cout<< "\nworldPoints: "<< std::endl << worldPoints << std::endl;
+ //  // printf("WorldPoints: \n",worldPoints);
+ //  // printf("Avg X: %f\n",avgX);
+ //  // printf("Avg Y: %f\n",avgY);
+ //  // printf("Avg Z: %f\n",avgZ);
 
-  for (int i = (worldPoints.cols - 4); i < worldPoints.cols; i++)
-    {
-      //printf("i: %d\n",i);
-      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
-      //printf("X:  %f\n",worldPoints.at<float>(0,i));
-      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
-      //printf("Y:  %f\n",worldPoints.at<float>(1,i));
-      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
-      // printf("Z:  %f\n",worldPoints.at<float>(2,i));
-      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
-    }
+ //  for (int i = (worldPoints.cols - 4); i < worldPoints.cols; i++)
+ //    {
+ //      //printf("i: %d\n",i);
+ //      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
+ //      //printf("X:  %f\n",worldPoints.at<float>(0,i));
+ //      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
+ //      //printf("Y:  %f\n",worldPoints.at<float>(1,i));
+ //      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
+ //      // printf("Z:  %f\n",worldPoints.at<float>(2,i));
+ //      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
+ //    }
 
-  Mat boundW = worldPoints(Range(0,(worldPoints.rows-1)),Range(worldPoints.cols-4,worldPoints.cols));
+ //  Mat boundW = worldPoints(Range(0,(worldPoints.rows-1)),Range(worldPoints.cols-4,worldPoints.cols));
 
   //std::cout << std::endl << boundW << std::endl;
 
@@ -761,21 +773,21 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 
   *yBot = yTrans;
   *xBot = (xLeftTrans+xRightTrans)/2;
-  *tBot =x bestDeg;
+  *tBot = bestDeg;
 
 
   printf("Estimate of X,Y pos: %f %f",(xLeftTrans+xRightTrans)/2,yTrans);
   
-  Mat boundP = Mat::zeros(3, 4, CV_32F);
+  // Mat boundP = Mat::zeros(3, 4, CV_32F);
 
-  boundP.at<float>(1,1) = 10.0;
-  boundP.at<float>(0,2) = 10.0;
-  boundP.at<float>(0,3) = 10.0;
-  boundP.at<float>(1,3) = 10.0;
+  // boundP.at<float>(1,1) = 10.0;
+  // boundP.at<float>(0,2) = 10.0;
+  // boundP.at<float>(0,3) = 10.0;
+  // boundP.at<float>(1,3) = 10.0;
 
-  //std::cout << boundP << std::endl;
+  // //std::cout << boundP << std::endl;
 
-  Mat warp_mat( 3, 4, CV_32FC1 );
+  // Mat warp_mat( 3, 4, CV_32FC1 );
   //warp_mat = getAffineTransform( boundW,boundP);
   //std::vector<T>::const_iterator first  = worldPoints.end() - 4;
   // std::vector<T>::const_iterator last = worldPoints.end();
@@ -1091,7 +1103,7 @@ bool Bot::unitTest(Mat image)
   //-- Test updateBoxPos
   matchUL = upperLeft;
   matchLR = lowerRight;
-  updateBoxPos(image,image);
+  //updateBoxPos(image,image,float*, float*, float*);
   if(matchUL.x == upperLeft.x) printf("[ PASS ]");
   else
     {

@@ -26,6 +26,7 @@ using namespace cv;
 class Bot
 {
  public:
+  Bot();
   Bot(Point uL, Point lR);
   ~Bot();
   

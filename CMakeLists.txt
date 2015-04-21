@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   tf
+  cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
@@ -98,6 +99,7 @@ catkin_package(
 # include_directories(include)
 include_directories(include
   ${catkin_INCLUDE_DIRS}
+  #${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -116,6 +118,12 @@ add_executable(perception_tracker src/perception_tracker.cpp src/bot.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(perception_tracker
   ${catkin_LIBRARIES}
+  #opencv_ocl
+  #opencv_core
+  #opencv_features2d
+  opencv_nonfree
+  #opencv_highgui
+  #${OpenCV_LIBRARIES}
 )
 
 
