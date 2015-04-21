@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(trajectory_controller)
+project(perception_tracker)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -106,20 +106,18 @@ include_directories(include
 # )
 
 ## Declare a cpp executable
-add_executable(global_controller src/global_controller.cpp)
-add_executable(local_controller src/local_controller.cpp)
+add_executable(perception_tracker src/perception_tracker.cpp src/bot.cpp)
+#add_executable(local_controller src/local_controller.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(trajectory_controller_node trajectory_controller_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(global_controller
+target_link_libraries(perception_tracker
   ${catkin_LIBRARIES}
 )
-target_link_libraries(local_controller 
-  ${catkin_LIBRARIES}
-)
+
 
 #############
 ## Install ##

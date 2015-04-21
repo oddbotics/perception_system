@@ -32,8 +32,8 @@ int main( int argc, char** argv )
 
   char imName1[40];
   char imName2[40];
-  sprintf(imName1,"images/test_images/19APR/left%03d.jpg",j);
-  sprintf(imName2,"images/test_images/19APR/right%03d.jpg",j);
+  sprintf(imName1,"images/test_images/21APR/left%03d.jpg",j);
+  sprintf(imName2,"images/test_images/21APR/right%03d.jpg",j);
   Mat imgL = imread( imName1, CV_LOAD_IMAGE_COLOR );
   Mat imgR = imread( imName2, CV_LOAD_IMAGE_COLOR );
   printf("%s\n",imName1);
@@ -46,6 +46,8 @@ int main( int argc, char** argv )
   //firstCar.updateBoxSize(img1);
 
   oddBot.updateBoxPos(imgL, imgR);
+  oddBot.findGoalPos(imgL, imgR);
+
   waitKey(10);
       // }
   return 0;
