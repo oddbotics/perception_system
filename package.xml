@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>perception_tracker</name>
+  <name>perception_system</name>
   <version>0.0.0</version>
-  <description>The perception tracker package</description>
+  <description>The perception tracker system package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
