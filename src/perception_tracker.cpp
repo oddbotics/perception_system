@@ -50,6 +50,9 @@ int main(int argc, char **argv)
   Bot *oddBot = new Bot(showI);
   
   float xRobot,yRobot,tRobot;
+  float xGoal,yGoal,tGoal;
+  float posError;
+
   perceptionTracker *perc_track= new perceptionTracker();
 
   ros::Publisher rPub = nh.advertise<geometry_msgs::Pose2D>("/robot_perceived_pose",10);
@@ -58,7 +61,6 @@ int main(int argc, char **argv)
   perc_track->goalPose.x = 1.9;
   perc_track->goalPose.y = 2.5;
   gPub.publish(perc_track->goalPose);
-
 
   ros::Rate r(100);
 
@@ -115,6 +117,24 @@ int main(int argc, char **argv)
       perc_track->robotPose.y = yRobot;
       perc_track->robotPose.theta = tRobot;
       rPub.publish(perc_track->robotPose);
+      
+      if(argc > 2)
+	{
+	  oddBot->findGoalPos(imgL, imgR,&xGoal,&yGoal,&tGoal);
+	  perc_track->goalPose.x = xGoal;
+	  perc_track->goalPose.y = yGoal;
+	  perc_track->goalPose.theta = tGoal;
+	  gPub.publish(perc_track->goalPose);
+      	  
+	}
+      
+      posError = sqrt(pow((perc_track->goalPose.x - perc_track->robotPose.x),2) + pow((perc_track->goalPose.y - perc_track->robotPose.y),2));
+      printf("Current robot distance from goal: %f\n",posError);
+      if(posError < .1)
+	{
+	  printf("\n#------- GOAL ACHIEVED!!!!! -----------#\n");
+	  return 0;
+	}
       r.sleep();
       ros::spinOnce();
     }
