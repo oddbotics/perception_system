@@ -445,7 +445,7 @@ void Bot::findGoalPos(Mat imageL, Mat imageR, float *xGoal, float *yGoal, float 
   *xGoal = (xLeftTrans+xRightTrans)/2;
   *tGoal = bestDeg;
 
-  printf("Estimate of X,Y pos of GOAL: %f %f",(xLeftTrans+xRightTrans)/2,yTrans);
+  printf("Estimate of X,Y pos of GOAL: %f %f\n",(xLeftTrans+xRightTrans)/2,yTrans);
     
   
   waitKey(1);  
