@@ -58,7 +58,7 @@ int main(int argc, char **argv)
   ros::Publisher rPub = nh.advertise<geometry_msgs::Pose2D>("/robot_perceived_pose",10);
   ros::Publisher gPub = nh.advertise<geometry_msgs::Pose2D>("/goal_perceived_pose",1,true);
 
-  ros::Publisher relPub = nh.advertise<nav_msgs::Path>("/goal_relative_pose",10);
+  ros::Publisher relPub = nh.advertise<nav_msgs::Path>("/path",10);
   
   perc_track->goalPose.x = 1.9;
   perc_track->goalPose.y = 2.5;
