@@ -240,147 +240,147 @@ void Bot::findGoalPos(Mat imageL, Mat imageR, float *xGoal, float *yGoal, float 
   //-- Estimate a box 
 
   //-- Match points inside the boxes in the Left and Right images
-  //  int minHessian = 400;
+    int minHessian = 400;
 
- //  SurfFeatureDetector detector( minHessian );
+   SurfFeatureDetector detector( minHessian );
 
- //  std::vector<KeyPoint> keypointsL, keypointsR, keypointsBotL, keypointsBotR, keypointsGML, keypointsGMR;
+   std::vector<KeyPoint> keypointsL, keypointsR, keypointsBotL, keypointsBotR, keypointsGML, keypointsGMR;
 
- //  detector.detect( imageL, keypointsL );
- //  detector.detect( imageR, keypointsR );
+   detector.detect( imageL, keypointsL );
+   detector.detect( imageR, keypointsR );
 
- //  Mat imgKeypointsL; Mat imgKeypointsR;
+   Mat imgKeypointsL; Mat imgKeypointsR;
   
  //  //-- Detect keypoints that are within the box -LEFT
 
- //  Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
+   Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
 	  
   
- //  for (int i = 0; i < keypointsL.size(); i++)
- //    {
- //      if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
- // 	  keypointsL[i].pt.y < (lBestLR.y /*+ imageL.rows/2 */) && keypointsL[i].pt.y > (lBestUL.y /*+ imageL.rows/2*/))
- // 	{
- // 	  keypointsBotL.push_back(keypointsL[i]);
- // 	}
- //    }
+   for (int i = 0; i < keypointsL.size(); i++)
+     {
+       if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
+  	  keypointsL[i].pt.y < (lBestLR.y /*+ imageL.rows/2 */) && keypointsL[i].pt.y > (lBestUL.y /*+ imageL.rows/2*/))
+  	{
+  	  keypointsBotL.push_back(keypointsL[i]);
+  	}
+     }
  // //-- Detect keypoints that are within the box - RIGHT
  
- // for (int i = 0; i < keypointsR.size(); i++)
- //    {
- //      if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
- // 	  keypointsR[i].pt.y < (rBestLR.y /*+ imageR.rows/2*/) && keypointsR[i].pt.y > (rBestUL.y /*+ imageR.rows/2*/))
- // 	{
- // 	  keypointsBotR.push_back(keypointsR[i]);
- // 	}
- //    }
+  for (int i = 0; i < keypointsR.size(); i++)
+     {
+       if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
+  	  keypointsR[i].pt.y < (rBestLR.y /*+ imageR.rows/2*/) && keypointsR[i].pt.y > (rBestUL.y /*+ imageR.rows/2*/))
+  	{
+  	  keypointsBotR.push_back(keypointsR[i]);
+  	}
+     }
  //  //-- Match points from within the box to the next frame
- //  matchPoints(&keypointsBotL,&keypointsBotR,imageL,imageR,&keypointsGML,&keypointsGMR,5.1);
+//   matchPoints(&keypointsBotL,&keypointsBotR,imageL,imageR,&keypointsGML,&keypointsGMR,5.1);
   
   
   //-- Triangulate distance
   
-  // Mat lProj,rProj;
- //  string paramsyml = "projmats.yml";
- //  FileStorage fsP(paramsyml,FileStorage::READ);
- //  fsP["P1"] >>lProj;
- //  fsP["P2"] >>rProj;
+   Mat lProj,rProj;
+   string paramsyml = "projmats.yml";
+   FileStorage fsP(paramsyml,FileStorage::READ);
+   fsP["P1"] >>lProj;
+   fsP["P2"] >>rProj;
 
- //  Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
- //  std::vector<Point2f> lPoints,rPoints;
- //  for (int i = 0; i < keypointsGML.size(); i++)
- //    {
- //      lPoints.push_back(keypointsGML[i].pt);
- //    }
- // for (int i = 0; i < keypointsGMR.size(); i++)
- //    {
- //      rPoints.push_back(keypointsGMR[i].pt);
- //    }
- // drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
- // drawKeypoints( imageR, keypointsGMR, imageWithKeyPointsR, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+   Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
+   std::vector<Point2f> lPoints,rPoints;
+   for (int i = 0; i < keypointsGML.size(); i++)
+     {
+       lPoints.push_back(keypointsGML[i].pt);
+     }
+  for (int i = 0; i < keypointsGMR.size(); i++)
+     {
+       rPoints.push_back(keypointsGMR[i].pt);
+     }
+  //drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+  //drawKeypoints( imageR, keypointsGMR, imageWithKeyPointsR, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
 
- // //imshow("With Keypoints L - GOAL", imageWithKeyPointsL);
- // //imshow("With Keypoints R - GOAL", imageWithKeyPointsR);
+ //imshow("With Keypoints L - GOAL", imageWithKeyPointsL);
+ //imshow("With Keypoints R - GOAL", imageWithKeyPointsR);
  // waitKey(10);
 
- // Point2f tempPoint;
+  Point2f tempPoint;
  // //left 0,0
- // tempPoint.x = 206;
- // tempPoint.y = 568;
- // lPoints.push_back(tempPoint);
+  tempPoint.x = 206;
+  tempPoint.y = 568;
+  lPoints.push_back(tempPoint);
  // //left 0,10
- // tempPoint.x = 252;
- // tempPoint.y = 409;
- // lPoints.push_back(tempPoint);
- // //left 10,0
- // tempPoint.x = 1134;
- // tempPoint.y = 502;
- // lPoints.push_back(tempPoint);
- // //left 10,10
- // tempPoint.x = 762;
- // tempPoint.y = 395;
- // lPoints.push_back(tempPoint);
+ tempPoint.x = 252;
+  tempPoint.y = 409;
+  lPoints.push_back(tempPoint);
+  //left 10,0
+  tempPoint.x = 1134;
+  tempPoint.y = 502;
+  lPoints.push_back(tempPoint);
+  //left 10,10
+  tempPoint.x = 762;
+  tempPoint.y = 395;
+  lPoints.push_back(tempPoint);
 
- // //right 0,0
- // tempPoint.x = 71;
- // tempPoint.y = 636;
- // rPoints.push_back(tempPoint);
- // //right 0,10
- // tempPoint.x = 169;
- // tempPoint.y = 474;
- // rPoints.push_back(tempPoint);
- // //right 10,0
- // tempPoint.x = 1018;
- // tempPoint.y = 545;
- // rPoints.push_back(tempPoint);
+  //right 0,0
+  tempPoint.x = 71;
+  tempPoint.y = 636;
+  rPoints.push_back(tempPoint);
+  //right 0,10
+  tempPoint.x = 169;
+  tempPoint.y = 474;
+ rPoints.push_back(tempPoint);
+  //right 10,0
+  tempPoint.x = 1018;
+  tempPoint.y = 545;
+  rPoints.push_back(tempPoint);
  // //right 10,10
- // tempPoint.x = 689;
- // tempPoint.y = 449;
- // rPoints.push_back(tempPoint);
+  tempPoint.x = 689;
+  tempPoint.y = 449;
+ rPoints.push_back(tempPoint);
 
- // //std::cout << "\n2D POINTS" << std::endl << lPoints << std::endl << rPoints <<std::endl;
+  //std::cout << "\n2D POINTS" << std::endl << lPoints << std::endl << rPoints <<std::endl;
  
- // triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
- //  //triangulatePoints(lProj2,rProj2,lPoints,rPoints,worldPoints);
+  triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
+   //triangulatePoints(lProj2,rProj2,lPoints,rPoints,worldPoints);
 
  // //-- Normalize by the scale factor
  // //-- And get the average of the values
  // //-- Make sure to not include the four boundary points in the average
- //  std::vector<float> x,y,z;
- //  for (int i = 0; i < (worldPoints.cols - 4); i++)
- //    {
- //      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
- //      x.push_back(worldPoints.at<float>(0,i));
- //      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
- //      y.push_back(worldPoints.at<float>(1,i));
- //      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
- //      z.push_back(worldPoints.at<float>(2,i));
- //      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
- //    }
+   std::vector<float> x,y,z;
+   for (int i = 0; i < (worldPoints.cols - 4); i++)
+     {
+       worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
+       x.push_back(worldPoints.at<float>(0,i));
+       worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
+       y.push_back(worldPoints.at<float>(1,i));
+       worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
+       z.push_back(worldPoints.at<float>(2,i));
+       worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
+     }
 
- // float avgX = std::accumulate(x.begin(), x.end(), 0) / (float)x.size();
- // float avgY = std::accumulate(y.begin(), y.end(), 0) / (float)y.size();
- // float avgZ = std::accumulate(z.begin(), z.end(), 0) / (float)z.size();
+  float avgX = std::accumulate(x.begin(), x.end(), 0) / (float)x.size();
+  float avgY = std::accumulate(y.begin(), y.end(), 0) / (float)y.size();
+  float avgZ = std::accumulate(z.begin(), z.end(), 0) / (float)z.size();
 
- // //std::cout<< "\nworldPoints: "<< std::endl << worldPoints << std::endl;
- //  // printf("WorldPoints: \n",worldPoints);
- //  // printf("Avg X: %f\n",avgX);
- //  // printf("Avg Y: %f\n",avgY);
- //  // printf("Avg Z: %f\n",avgZ);
+ //std::cout<< "\nworldPoints: "<< std::endl << worldPoints << std::endl;
+  //printf("WorldPoints: \n",worldPoints);
+   printf("Avg X: %f\n",avgX);
+   printf("Avg Y: %f\n",avgY);
+   printf("Avg Z: %f\n",avgZ);
 
- //  for (int i = (worldPoints.cols - 4); i < worldPoints.cols; i++)
- //    {
- //      //printf("i: %d\n",i);
- //      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
- //      //printf("X:  %f\n",worldPoints.at<float>(0,i));
- //      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
- //      //printf("Y:  %f\n",worldPoints.at<float>(1,i));
- //      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
- //      //printf("Z:  %f\n",worldPoints.at<float>(2,i));
- //      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
- //    }
+   for (int i = (worldPoints.cols - 4); i < worldPoints.cols; i++)
+    {
+       //printf("i: %d\n",i);
+       worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
+       //printf("X:  %f\n",worldPoints.at<float>(0,i));
+       worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
+      //printf("Y:  %f\n",worldPoints.at<float>(1,i));
+       worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
+       //printf("Z:  %f\n",worldPoints.at<float>(2,i));
+       worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
+     }
 
- //  Mat boundW = worldPoints(Range(0,(worldPoints.rows-1)),Range(worldPoints.cols-4,worldPoints.cols));
+   Mat boundW = worldPoints(Range(0,(worldPoints.rows-1)),Range(worldPoints.cols-4,worldPoints.cols));
 
   //std::cout << std::endl << boundW << std::endl;
 
@@ -538,52 +538,52 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
 	  //-- MATCHING SURF FEATURES
 
 	  //-- Match points inside the boxes in the Left and template images
-	  // int minHessian = 400;
+	   int minHessian = 400;
 
-	  // SurfFeatureDetector detector( minHessian );
+	   SurfFeatureDetector detector( minHessian );
+     std::vector<KeyPoint> keypointsL, keypointsT, keypointsBotL, keypointsBotT, keypointsGML, keypointsGMT;
 
-	  // std::vector<KeyPoint> keypointsL, keypointsT, keypointsBotL, keypointsBotT, keypointsGML, keypointsGMT;
+	   detector.detect( halfImage, keypointsL );
+	   detector.detect( imageR, keypointsT );
 
-	  // detector.detect( halfImage, keypointsL );
-	  // detector.detect( tempIm, keypointsT );
-
-	  // Mat imgKeypointsL; Mat imgKeypointsT;
+	   Mat imgKeypointsL; Mat imgKeypointsT;
   
-	  // //-- Detect keypoints that are within the box -LEFT
+	   //-- Detect keypoints that are within the box -LEFT
  
-	  // for (int i = 0; i < keypointsL.size(); i++)
-	  //   {
-	  //     if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
-	  // 	  keypointsL[i].pt.y < lBestLR.y && keypointsL[i].pt.y > lBestUL.y)
-	  // 	{
-	  // 	  keypointsBotL.push_back(keypointsL[i]);
-	  // 	}
-	  //   }
-	  // //-- Detect keypoints that are within the box - RIGHT
+	   for (int i = 0; i < keypointsL.size(); i++)
+	     {
+	       if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
+	   	  keypointsL[i].pt.y < lBestLR.y && keypointsL[i].pt.y > lBestUL.y)
+	   	{
+	   	  keypointsBotL.push_back(keypointsL[i]);
+	   	}
+	     }
+	   //-- Detect keypoints that are within the box - RIGHT
  
-	  // // for (int i = 0; i < keypointsR.size(); i++)
-	  // //   {
-	  // //     if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
-	  // // 	  keypointsR[i].pt.y < rBestLR.y && keypointsR[i].pt.y > rBestUL.y)
-	  // // 	{
-	  // // 	  keypointsBotR.push_back(keypointsR[i]);
-	  // // 	}
-	  // //   }
+	  //  for (int i = 0; i < keypointsT.size(); i++)
+	   //   {
+	    //   if (keypointsT[i].pt.x < rBestLR.x && keypointsT[i].pt.x > rBestUL.x &&
+	   	 // keypointsT[i].pt.y < rBestLR.y && keypointsT[i].pt.y > rBestUL.y)
+	   //	{
+	   	//  keypointsBotT.push_back(keypointsT[i]);
+	   //	}
+	//     }
 
 	  // //-- Match points from within the box to the next frame
-	  // matchPoints(&keypointsL,&keypointsT,halfImage,tempIm,&keypointsGML,&keypointsGMT,3.1);
-	 
-	  // drawKeypoints( halfImage, keypointsGML, imgKeypointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
-	  // imshow("with Keypoints",imgKeypointsL);
-	  // printf("Matched %d points\n",keypointsGML.size());
-	  // if(keypointsGML.size()>lMostPoints)
-	  //   {
-	  //     lMostPoints = keypointsGML.size();
-	  //     printf("---Highest Match is now %d\n",lMostPoints);
-	  //     printf("---Highest Match Rotation is %f\n",deg);
-	  //   }
+//	  std::cout << keypointsT.size() << std::endl; 
+//	   matchPoints(&keypointsBotL,&keypointsT,halfImage,tempIm,&keypointsGML,&keypointsGMT,5.1);
+			
+//	   drawKeypoints( halfImage, keypointsGML, imgKeypointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+//	   imshow("with Keypoints",imgKeypointsL);
+//	   printf("Matched %d points\n",keypointsGML.size());
+	   if(keypointsGML.size()>lMostPoints)
+	     {
+	       lMostPoints = keypointsGML.size();
+//	       printf("---Highest Match is now %d\n",lMostPoints);
+//	       printf("---Highest Match Rotation is %f\n",deg);
+	     }
 
-	  //waitKey(1);
+	  waitKey(1);
 	}
     }
   
@@ -658,51 +658,49 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
   //-- Estimate a box 
 
   //-- Match points inside the boxes in the Left and Right images
-  //  int minHessian = 400;
+    int minHessian = 400;
+  SurfFeatureDetector detector( minHessian );
 
- //  SurfFeatureDetector detector( minHessian );
+   std::vector<KeyPoint> keypointsL, keypointsR, keypointsBotL, keypointsBotR, keypointsGML, keypointsGMR;
 
- //  std::vector<KeyPoint> keypointsL, keypointsR, keypointsBotL, keypointsBotR, keypointsGML, keypointsGMR;
-
- //  detector.detect( imageL, keypointsL );
- //  detector.detect( imageR, keypointsR );
-
- //  Mat imgKeypointsL; Mat imgKeypointsR;
+   detector.detect( imageL, keypointsL );
+   detector.detect( imageR, keypointsR );
+  Mat imgKeypointsL; Mat imgKeypointsR;
   
- //  //-- Detect keypoints that are within the box -LEFT
+   //-- Detect keypoints that are within the box -LEFT
 
- //  Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
+   Mat halfImage = imageR(Range(imageR.rows/2,imageR.rows),Range(1,imageR.cols));
 	  
   
- //  for (int i = 0; i < keypointsL.size(); i++)
- //    {
- //      if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
- // 	  keypointsL[i].pt.y < (lBestLR.y + imageL.rows/2) && keypointsL[i].pt.y > (lBestUL.y + imageL.rows/2))
- // 	{
- // 	  keypointsBotL.push_back(keypointsL[i]);
- // 	}
- //    }
- // //-- Detect keypoints that are within the box - RIGHT
+   for (int i = 0; i < keypointsL.size(); i++)
+     {
+       if (keypointsL[i].pt.x < lBestLR.x && keypointsL[i].pt.x > lBestUL.x &&
+  	  keypointsL[i].pt.y < (lBestLR.y + imageL.rows/2) && keypointsL[i].pt.y > (lBestUL.y + imageL.rows/2))
+  	{
+  	  keypointsBotL.push_back(keypointsL[i]);
+  	}
+     }
+  //-- Detect keypoints that are within the box - RIGHT
  
- // for (int i = 0; i < keypointsR.size(); i++)
- //    {
- //      if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
- // 	  keypointsR[i].pt.y < (rBestLR.y + imageR.rows/2) && keypointsR[i].pt.y > (rBestUL.y + imageR.rows/2))
- // 	{
- // 	  keypointsBotR.push_back(keypointsR[i]);
- // 	}
- //    }
+  for (int i = 0; i < keypointsR.size(); i++)
+     {
+       if (keypointsR[i].pt.x < rBestLR.x && keypointsR[i].pt.x > rBestUL.x &&
+  	  keypointsR[i].pt.y < (rBestLR.y + imageR.rows/2) && keypointsR[i].pt.y > (rBestUL.y + imageR.rows/2))
+  	{
+  	  keypointsBotR.push_back(keypointsR[i]);
+  	}
+     }
   //-- Match points from within the box to the next frame
-  //matchPoints(&keypointsBotL,&keypointsBotR,imageL,imageR,&keypointsGML,&keypointsGMR,5.1);
+  // matchPoints(&keypointsBotL,&keypointsBotR,imageL,imageR,&keypointsGML,&keypointsGMR,5.1);
   
   
   //-- Triangulate distance
   
-  // Mat lProj,rProj;
-  // string paramsyml = "projmats.yml";
-  // FileStorage fsP(paramsyml,FileStorage::READ);
-  // fsP["P1"] >>lProj;
-  // fsP["P2"] >>rProj;
+   Mat lProj,rProj;
+   string paramsyml = "projmats.yml";
+   FileStorage fsP(paramsyml,FileStorage::READ);
+   fsP["P1"] >>lProj;
+   fsP["P2"] >>rProj;
 
   // std::cout<<"Printing contents of proj mats :"<<std::endl;
   // std::cout<<lProj<<std::endl<<std::endl;
@@ -715,103 +713,103 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
   // fsP["leftP"] >>stLP;
   // fsP["rightP"] >>stRP;
 
-  // Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
- //  std::vector<Point2f> lPoints,rPoints;
- //  for (int i = 0; i < keypointsGML.size(); i++)
- //    {
- //      lPoints.push_back(keypointsGML[i].pt);
- //    }
- // for (int i = 0; i < keypointsGMR.size(); i++)
- //    {
- //      rPoints.push_back(keypointsGMR[i].pt);
- //    }
- // drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
- // drawKeypoints( imageR, keypointsGMR, imageWithKeyPointsR, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+   Mat worldPoints,imageWithKeyPointsL,imageWithKeyPointsR;
+   std::vector<Point2f> lPoints,rPoints;
+   for (int i = 0; i < keypointsGML.size(); i++)
+     {
+       lPoints.push_back(keypointsGML[i].pt);
+     }
+  for (int i = 0; i < keypointsGMR.size(); i++)
+     {
+       rPoints.push_back(keypointsGMR[i].pt);
+     }
+  //drawKeypoints( imageL, keypointsGML, imageWithKeyPointsL, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+  //drawKeypoints( imageR, keypointsGMR, imageWithKeyPointsR, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
 
- // //imshow("With Keypoints L", imageWithKeyPointsL);
- // //imshow("With Keypoints R", imageWithKeyPointsR);
- // waitKey(10);
+  //imshow("With Keypoints L", imageWithKeyPointsL);
+  //imshow("With Keypoints R", imageWithKeyPointsR);
+  waitKey(10);
 
- // Point2f tempPoint;
+  Point2f tempPoint;
  // //left 0,0
- // tempPoint.x = 206;
- // tempPoint.y = 568;
- // lPoints.push_back(tempPoint);
+  tempPoint.x = 206;
+  tempPoint.y = 568;
+  lPoints.push_back(tempPoint);
  // //left 0,10
- // tempPoint.x = 252;
- // tempPoint.y = 409;
- // lPoints.push_back(tempPoint);
+  tempPoint.x = 252;
+  tempPoint.y = 409;
+  lPoints.push_back(tempPoint);
  // //left 10,0
- // tempPoint.x = 1134;
- // tempPoint.y = 502;
- // lPoints.push_back(tempPoint);
+  tempPoint.x = 1134;
+  tempPoint.y = 502;
+  lPoints.push_back(tempPoint);
  // //left 10,10
- // tempPoint.x = 762;
- // tempPoint.y = 395;
- // lPoints.push_back(tempPoint);
+  tempPoint.x = 762;
+  tempPoint.y = 395;
+  lPoints.push_back(tempPoint);
 
  // //right 0,0
- // tempPoint.x = 71;
- // tempPoint.y = 636;
- // rPoints.push_back(tempPoint);
+  tempPoint.x = 71;
+  tempPoint.y = 636;
+  rPoints.push_back(tempPoint);
  // //right 0,10
- // tempPoint.x = 169;
- // tempPoint.y = 474;
- // rPoints.push_back(tempPoint);
- // //right 10,0
- // tempPoint.x = 1018;
- // tempPoint.y = 545;
- // rPoints.push_back(tempPoint);
+  tempPoint.x = 169;
+  tempPoint.y = 474;
+  rPoints.push_back(tempPoint);
+ //right 10,0
+  tempPoint.x = 1018;
+  tempPoint.y = 545;
+  rPoints.push_back(tempPoint);
  // //right 10,10
- // tempPoint.x = 689;
- // tempPoint.y = 449;
- // rPoints.push_back(tempPoint);
+  tempPoint.x = 689;
+  tempPoint.y = 449;
+  rPoints.push_back(tempPoint);
 
  // //std::cout << "\n2D POINTS" << std::endl << lPoints << std::endl << rPoints <<std::endl;
  
- // triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
+  triangulatePoints(lProj,rProj,lPoints,rPoints,worldPoints);
  //  //triangulatePoints(lProj2,rProj2,lPoints,rPoints,worldPoints);
 
  // //-- Normalize by the scale factor
  // //-- And get the average of the values
  // //-- Make sure to not include the four boundary points in the average
- //  std::vector<float> x,y,z;
- //  for (int i = 0; i < (worldPoints.cols - 4); i++)
- //    {
- //      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
- //      x.push_back(worldPoints.at<float>(0,i));
- //      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
- //      y.push_back(worldPoints.at<float>(1,i));
- //      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
- //      z.push_back(worldPoints.at<float>(2,i));
- //      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
- //    }
+   std::vector<float> x,y,z;
+   for (int i = 0; i < (worldPoints.cols - 4); i++)
+     {
+       worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
+       x.push_back(worldPoints.at<float>(0,i));
+       worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
+       y.push_back(worldPoints.at<float>(1,i));
+       worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
+       z.push_back(worldPoints.at<float>(2,i));
+       worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
+     }
 
- //  float avgX = std::accumulate(x.begin(), x.end(), 0) / (float)x.size();
- //  float avgY = std::accumulate(y.begin(), y.end(), 0) / (float)y.size();
- //  float avgZ = std::accumulate(z.begin(), z.end(), 0) / (float)z.size();
+   float avgX = std::accumulate(x.begin(), x.end(), 0) / (float)x.size();
+  float avgY = std::accumulate(y.begin(), y.end(), 0) / (float)y.size();
+   float avgZ = std::accumulate(z.begin(), z.end(), 0) / (float)z.size();
 
- //  //std::cout<< "\nworldPoints: "<< std::endl << worldPoints << std::endl;
+   //std::cout<< "\nworldPoints: "<< std::endl << worldPoints << std::endl;
  //  // printf("WorldPoints: \n",worldPoints);
- //  // printf("Avg X: %f\n",avgX);
- //  // printf("Avg Y: %f\n",avgY);
- //  // printf("Avg Z: %f\n",avgZ);
+    printf("Avg X: %f\n",avgX);
+   printf("Avg Y: %f\n",avgY);
+   printf("Avg Z: %f\n",avgZ);
 
- //  for (int i = (worldPoints.cols - 4); i < worldPoints.cols; i++)
- //    {
- //      //printf("i: %d\n",i);
- //      worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
+   for (int i = (worldPoints.cols - 4); i < worldPoints.cols; i++)
+     {
+       //printf("i: %d\n",i);
+       worldPoints.at<float>(0,i) /= worldPoints.at<float>(3,i);
  //      //printf("X:  %f\n",worldPoints.at<float>(0,i));
- //      worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
+       worldPoints.at<float>(1,i) /= worldPoints.at<float>(3,i);
  //      //printf("Y:  %f\n",worldPoints.at<float>(1,i));
- //      worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
+       worldPoints.at<float>(2,i) /= worldPoints.at<float>(3,i);
  //      // printf("Z:  %f\n",worldPoints.at<float>(2,i));
- //      worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
- //    }
+       worldPoints.at<float>(3,i) /= worldPoints.at<float>(3,i);
+     }
 
- //  Mat boundW = worldPoints(Range(0,(worldPoints.rows-1)),Range(worldPoints.cols-4,worldPoints.cols));
+   Mat boundW = worldPoints(Range(0,(worldPoints.rows-1)),Range(worldPoints.cols-4,worldPoints.cols));
 
-  //std::cout << std::endl << boundW << std::endl;
+  std::cout << std::endl << boundW << std::endl;
 
   //-- Map it to something based on the boundary values
   if(lBestDeg == 0 && rBestDeg > 180)
@@ -823,7 +821,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
       rBestDeg = 360.0;
     }
 
-  float bestDeg = (lBestDeg + rBestDeg)/2 + 45.0;
+  float bestDeg = rBestDeg;//(lBestDeg + rBestDeg)/2;// + 45.0;
   if (bestDeg > 360)
     {
       bestDeg = bestDeg - 360.0;
@@ -846,7 +844,7 @@ void Bot::updateBoxPos(Mat imageL, Mat imageR, float *xBot, float *yBot, float *
   *tBot = bestDeg;
 
 
-  printf("Estimate of X,Y pos: %f %f",(xLeftTrans+xRightTrans)/2,yTrans);
+  printf("Estimate of X,Y pos: %f %f\n",(xLeftTrans+xRightTrans)/2,yTrans);
    
   waitKey(10);
 }

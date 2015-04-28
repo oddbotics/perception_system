@@ -27,7 +27,7 @@
 #include "opencv2/nonfree/nonfree.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
 
-#include "oddbot_msgs/MotorCommand.h"
+//#include "oddbot_msgs/MotorCommand.h"
 #include <cmath> 
 
 
